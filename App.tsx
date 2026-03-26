@@ -15,6 +15,8 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { ApiError, getAnalyticsAllTime, getPersons, getWorkspaces, getYears, login, refreshAuth, signup } from './src/api';
 import { API_BASE_URL, HAS_API_CONFIG } from './src/config';
 import { clearSessionStorage, loadSessionStorage, saveSessionStorage } from './src/storage';
@@ -236,9 +238,9 @@ export default function App() {
       <SafeAreaView style={styles.screen}>
         <StatusBar style="light" />
         <View style={styles.loadingWrap}>
-          <ActivityIndicator color={palette.gold} size="large" />
-          <Text style={styles.loadingTitle}>Preparing Family Finance Mobile</Text>
-          <Text style={styles.loadingCopy}>Restoring your secure session and workspace context.</Text>
+          <ActivityIndicator color={palette.primary} size="large" />
+          <Text style={styles.loadingTitle}>Preparing Workspace</Text>
+          <Text style={styles.loadingCopy}>Restoring your secure session and context...</Text>
         </View>
       </SafeAreaView>
     );
@@ -250,10 +252,12 @@ export default function App() {
         <StatusBar style="light" />
         <ScrollView contentContainerStyle={styles.authScroll}>
           <View style={styles.configCard}>
-            <Text style={styles.brandLine}>FamilyFinance Mobile</Text>
-            <Text style={styles.configTitle}>Set the backend URL before launching the app.</Text>
+            <View style={styles.iconCircle}>
+              <Feather name="settings" size={24} color={palette.cyan} />
+            </View>
+            <Text style={styles.configTitle}>Backend Missing</Text>
             <Text style={styles.configCopy}>
-              Add `EXPO_PUBLIC_API_BASE_URL` to your mobile environment so the app can reach the shared backend API.
+              Configure `EXPO_PUBLIC_API_BASE_URL` in your `.env` so the app can connect to the core backend API.
             </Text>
             <View style={styles.codeBlock}>
               <Text style={styles.codeLine}>EXPO_PUBLIC_API_BASE_URL=http://YOUR-IP:5000/api/v1</Text>
@@ -284,7 +288,27 @@ export default function App() {
               showsVerticalScrollIndicator={false}
             >
               <View style={styles.authContent}>
-                <View style={styles.authCard}>
+                
+                {/* Hero Section */}
+                <View style={styles.authHero}>
+                  <LinearGradient
+                    colors={['rgba(139, 92, 246, 0.25)', 'transparent']}
+                    style={StyleSheet.absoluteFillObject}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  />
+                  <View style={styles.heroBadge}>
+                    <Ionicons name="layers" size={18} color={palette.primary} />
+                    <Text style={styles.heroBadgeTitle}>FamilyFinance</Text>
+                  </View>
+                  <Text style={styles.heroTitle}>Smart household{"\n"}money flow.</Text>
+                  <Text style={styles.heroCopy}>
+                    Your finances in your pocket, powered by a shared backend workspace.
+                  </Text>
+                </View>
+
+                {/* Auth Form Card */}
+                <View style={[styles.authCard, styles.cardShadow]}>
                   <View style={styles.modeTabs}>
                     {(['login', 'signup'] as AuthMode[]).map((mode) => (
                       <Pressable
@@ -302,23 +326,22 @@ export default function App() {
                     ))}
                   </View>
 
-                  <Text style={styles.authTitle}>{authMode === 'login' ? 'Access your workspace' : 'Create your first mobile workspace session'}</Text>
-                  <Text style={styles.authCopy}>
-                    {authMode === 'login'
-                      ? 'Sign in with the same account you use on the web app.'
-                      : 'Signup creates your account and personal workspace automatically.'}
+                  <Text style={styles.authTitle}>
+                    {authMode === 'login' ? 'Access Workspace' : 'Setup Workspace'}
                   </Text>
 
                   {authMode === 'signup' && (
                     <Field
+                      icon="user"
                       label="Full Name"
                       value={form.name}
                       onChangeText={(value) => setForm((current) => ({ ...current, name: value }))}
-                      placeholder="Hari"
+                      placeholder="e.g. Hari"
                     />
                   )}
                   <Field
-                    label="Email"
+                    icon="mail"
+                    label="Email Address"
                     value={form.email}
                     onChangeText={(value) => setForm((current) => ({ ...current, email: value }))}
                     placeholder="you@example.com"
@@ -326,6 +349,7 @@ export default function App() {
                     autoCapitalize="none"
                   />
                   <Field
+                    icon="lock"
                     label="Password"
                     value={form.password}
                     onChangeText={(value) => setForm((current) => ({ ...current, password: value }))}
@@ -335,32 +359,27 @@ export default function App() {
 
                   {authError ? (
                     <View style={styles.errorCard}>
+                      <Feather name="alert-circle" size={16} color={palette.red} />
                       <Text style={styles.errorText}>{authError}</Text>
                     </View>
                   ) : null}
 
-                  <Pressable disabled={submitting} onPress={handleAuth} style={[styles.primaryButton, submitting && styles.primaryButtonDisabled]}>
-                    {submitting ? <ActivityIndicator color={palette.bg} /> : <Text style={styles.primaryButtonText}>{authMode === 'login' ? 'Sign In' : 'Create Account'}</Text>}
+                  <Pressable disabled={submitting} onPress={handleAuth} style={({ pressed }) => [styles.primaryButton, submitting && styles.primaryButtonDisabled, pressed && { opacity: 0.8 }]}>
+                    <LinearGradient
+                      colors={[palette.primary, palette.primaryDark]}
+                      style={styles.primaryButtonGradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                    >
+                      {submitting ? (
+                        <ActivityIndicator color={palette.text} />
+                      ) : (
+                        <Text style={styles.primaryButtonText}>{authMode === 'login' ? 'Sign In to Proceed' : 'Create & Continue'}</Text>
+                      )}
+                    </LinearGradient>
                   </Pressable>
-
-                  <Text style={styles.helperText}>
-                    {authMode === 'login' ? 'Need an account? Switch to Create Account.' : 'Already registered? Switch to Sign In.'}
-                  </Text>
                 </View>
 
-                <View style={styles.authHero}>
-                  <View style={styles.heroBadge}>
-                    <Text style={styles.heroBadgeIcon}>₹</Text>
-                    <View style={styles.heroBadgeTextWrap}>
-                      <Text style={styles.heroBadgeTitle}>FamilyFinance</Text>
-                      <Text style={styles.heroBadgeSub}>Shared backend, separate mobile client</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.heroTitle}>Bring your household money flow into your pocket.</Text>
-                  <Text style={styles.heroCopy}>
-                    Start with secure auth, workspace switching, and a live summary dashboard built on the same API as the web app.
-                  </Text>
-                </View>
               </View>
             </ScrollView>
           </TouchableWithoutFeedback>
@@ -374,19 +393,30 @@ export default function App() {
       <StatusBar style="light" />
       <ScrollView
         contentContainerStyle={styles.appScroll}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => session && activeWorkspace && hydrateDashboard(session, activeWorkspace.id, true)} tintColor={palette.gold} />}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => session && activeWorkspace && hydrateDashboard(session, activeWorkspace.id, true)} tintColor={palette.primary} />}
       >
-        <View style={styles.topCard}>
+        {/* Top Floating Header */}
+        <View style={[styles.topCard, styles.cardShadow]}>
+          <LinearGradient
+            colors={['rgba(6, 182, 212, 0.15)', 'transparent']}
+            style={StyleSheet.absoluteFillObject}
+            start={{ x: 1, y: 0 }}
+            end={{ x: 0, y: 1 }}
+          />
           <View style={styles.topCardHeader}>
-            <View>
-              <Text style={styles.brandLine}>FamilyFinance Mobile</Text>
+            <View style={styles.flex}>
+              <View style={styles.workspacePill}>
+                 <Feather name="globe" size={12} color={palette.cyan} />
+                 <Text style={styles.workspacePillText}>Workspace Context</Text>
+              </View>
               <Text style={styles.topCardTitle}>{activeWorkspace?.name || 'No workspace selected'}</Text>
               <Text style={styles.topCardCopy}>
-                Signed in as {session?.user.name}. Same backend, separate mobile client.
+                Signed in as <Text style={styles.highlightText}>{session?.user.name}</Text>
               </Text>
             </View>
-            <Pressable onPress={handleLogout} style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Logout</Text>
+            <Pressable onPress={handleLogout} style={({ pressed }) => [styles.iconButton, pressed && { opacity: 0.7 }]}>
+              <Feather name="log-out" size={18} color={palette.textDim} />
             </Pressable>
           </View>
 
@@ -400,74 +430,101 @@ export default function App() {
                   style={[styles.workspaceChip, active && styles.workspaceChipActive]}
                 >
                   <Text style={[styles.workspaceChipTitle, active && styles.workspaceChipTitleActive]}>{workspace.name}</Text>
-                  <Text style={[styles.workspaceChipMeta, active && styles.workspaceChipMetaActive]}>
-                    {(workspace.role || 'member').toUpperCase()} · {workspace.type}
-                  </Text>
+                  <View style={styles.workspaceChipMetaRow}>
+                    <Text style={[styles.workspaceChipMeta, active && styles.workspaceChipMetaActive]}>
+                      {(workspace.role || 'member').toUpperCase()}
+                    </Text>
+                    <View style={[styles.dot, active && styles.dotActive]} />
+                    <Text style={[styles.workspaceChipMeta, active && styles.workspaceChipMetaActive]}>
+                      {workspace.type}
+                    </Text>
+                  </View>
                 </Pressable>
               );
             })}
           </View>
         </View>
 
-        <Section title="Quick Snapshot" subtitle="Live backend totals for the selected workspace.">
+        {/* Snapshot Section */}
+        <Section title="Quick Snapshot" subtitle="Live backend overview" icon="pie-chart">
           <View style={styles.statGrid}>
-            <StatCard label="All-Time Spend" value={currency(dashboard.analytics?.totalExpenses)} accent={palette.red} />
-            <StatCard label="Entries" value={String(dashboard.analytics?.expenseCount || 0)} accent={palette.text} />
-            <StatCard label="Outstanding Debt" value={currency(dashboard.analytics?.totalDebt)} accent={palette.amber} />
-            <StatCard label="Invested" value={currency(dashboard.analytics?.totalInvested)} accent={palette.blue} />
+            <StatCard label="Total Spent" value={currency(dashboard.analytics?.totalExpenses)} gradient={['rgba(239, 68, 68, 0.15)', 'rgba(239, 68, 68, 0.05)']} accentColor={palette.red} icon="trending-down" />
+            <StatCard label="Transactions" value={String(dashboard.analytics?.expenseCount || 0)} gradient={['rgba(139, 92, 246, 0.15)', 'rgba(139, 92, 246, 0.05)']} accentColor={palette.primary} icon="hash" />
+            <StatCard label="Total Debt" value={currency(dashboard.analytics?.totalDebt)} gradient={['rgba(245, 158, 11, 0.15)', 'rgba(245, 158, 11, 0.05)']} accentColor={palette.amber} icon="credit-card" />
+            <StatCard label="Investments" value={currency(dashboard.analytics?.totalInvested)} gradient={['rgba(6, 182, 212, 0.15)', 'rgba(6, 182, 212, 0.05)']} accentColor={palette.cyan} icon="trending-up" />
           </View>
         </Section>
 
-        <Section title="People" subtitle="The people currently available in this workspace.">
+        {/* People Section */}
+        <Section title="Active People" subtitle="Participants in this workspace" icon="users">
           {dashboard.persons.length ? (
-            <View style={styles.listCard}>
-              {dashboard.persons.slice(0, 6).map((person) => (
-                <View key={person.id} style={styles.listRow}>
-                  <View style={styles.personRowLeft}>
-                    <View style={[styles.personDot, { backgroundColor: person.color || palette.gold }]} />
-                    <View style={styles.personTextWrap}>
-                      <Text style={styles.listTitle}>{person.name}</Text>
-                      <Text style={styles.listMeta}>{person.hasPanel ? 'Expense panel enabled' : 'Income only'}</Text>
+            <View style={[styles.listCard, styles.cardShadow]}>
+               {dashboard.persons.slice(0, 6).map((person, i) => {
+                 const isLast = i === Math.min(dashboard.persons.length, 6) - 1;
+                 return (
+                  <View key={person.id} style={[styles.listRow, !isLast && styles.listRowBorder]}>
+                    <View style={styles.personRowLeft}>
+                      <View style={[styles.avatarStyle, { backgroundColor: person.color || palette.primary }]}>
+                        <Text style={styles.avatarText}>{person.name.substring(0, 2).toUpperCase()}</Text>
+                      </View>
+                      <View style={styles.personTextWrap}>
+                        <Text style={styles.listTitle}>{person.name}</Text>
+                        <Text style={styles.listMeta}>{person.hasPanel ? 'Expense Panel Active' : 'Income Only'}</Text>
+                      </View>
                     </View>
+                    <Feather name="chevron-right" size={16} color={palette.border} />
                   </View>
-                </View>
-              ))}
+                 );
+               })}
             </View>
           ) : (
-            <EmptyCard message="No workspace people found yet." />
+            <EmptyCard message="No people linked to this workspace." icon="user-x" />
           )}
         </Section>
 
-        <Section title="Years & Months" subtitle="Your current year structures from the shared expense backend.">
+        {/* Structures Section */}
+        <Section title="Financial Structures" subtitle="Configured years from Web" icon="calendar">
           {dashboard.years.length ? (
-            <View style={styles.listCard}>
-              {dashboard.years.slice(0, 6).map((year) => (
-                <View key={year.id} style={styles.listRow}>
-                  <View style={styles.personTextWrap}>
-                    <Text style={styles.listTitle}>{year.label}</Text>
-                    <Text style={styles.listMeta}>{year.status === 'archived' ? 'Archived' : 'Active structure'}</Text>
-                  </View>
-                </View>
-              ))}
+            <View style={[styles.listCard, styles.cardShadow]}>
+              {dashboard.years.slice(0, 6).map((year, i) => {
+                const isLast = i === Math.min(dashboard.years.length, 6) - 1;
+                return (
+                 <View key={year.id} style={[styles.listRow, !isLast && styles.listRowBorder]}>
+                   <View style={styles.personRowLeft}>
+                     <View style={[styles.iconCircle, { padding: 10, marginRight: 4, backgroundColor: palette.surface2 }]}>
+                       <Feather name={year.status === 'archived' ? 'archive' : 'layers'} size={14} color={palette.cyan} />
+                     </View>
+                     <View style={styles.personTextWrap}>
+                       <Text style={styles.listTitle}>{year.label}</Text>
+                       <Text style={styles.listMeta}>{year.status === 'archived' ? 'Archived structure' : 'Active structure'}</Text>
+                     </View>
+                   </View>
+                 </View>
+                );
+              })}
             </View>
           ) : (
-            <EmptyCard message="No year structures found yet." />
+            <EmptyCard message="No financial years found yet." icon="inbox" />
           )}
         </Section>
 
-        <Section title="Next Mobile Modules" subtitle="Suggested order for the next mobile build steps.">
+        {/* Up Next Modules */}
+        <Section title="Upcoming Modules" subtitle="What's planned next for Mobile" icon="compass">
           <View style={styles.moduleGrid}>
             {['Expenses', 'Analytics', 'Loans', 'Investments', 'Insurance', 'Banks'].map((item) => (
               <View key={item} style={styles.moduleCard}>
                 <Text style={styles.moduleTitle}>{item}</Text>
-                <Text style={styles.moduleMeta}>Planned next</Text>
+                <Ionicons name="sparkles" size={14} color={palette.border} style={{ marginTop: 2 }} />
               </View>
             ))}
           </View>
         </Section>
 
+        <View style={{ height: 40 }} />
+
         {dashboardError ? (
           <View style={styles.warningCard}>
+            <Feather name="wifi-off" size={16} color={palette.amber} />
             <Text style={styles.warningText}>{dashboardError}</Text>
           </View>
         ) : null}
@@ -484,6 +541,7 @@ function Field({
   secureTextEntry,
   keyboardType,
   autoCapitalize,
+  icon,
 }: {
   label: string;
   value: string;
@@ -492,66 +550,89 @@ function Field({
   secureTextEntry?: boolean;
   keyboardType?: 'default' | 'email-address';
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  icon: keyof typeof Feather.glyphMap;
 }) {
+  const [isFocused, setIsFocused] = useState(false);
   return (
     <View style={styles.fieldWrap}>
       <Text style={styles.fieldLabel}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={palette.muted}
-        secureTextEntry={secureTextEntry}
-        keyboardType={keyboardType}
-        autoCapitalize={autoCapitalize}
-        style={styles.input}
-      />
+      <View style={[styles.inputContainer, isFocused && styles.inputContainerFocused]}>
+        <Feather name={icon} size={18} color={isFocused ? palette.primary : palette.muted} style={styles.inputIcon} />
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={palette.muted}
+          secureTextEntry={secureTextEntry}
+          keyboardType={keyboardType}
+          autoCapitalize={autoCapitalize}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          style={styles.input}
+        />
+      </View>
     </View>
   );
 }
 
-function Section({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+function Section({ title, subtitle, icon, children }: { title: string; subtitle: string; icon: keyof typeof Feather.glyphMap; children: React.ReactNode }) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <Text style={styles.sectionCopy}>{subtitle}</Text>
+      <View style={styles.sectionHeader}>
+        <Feather name={icon} size={20} color={palette.text} />
+        <View>
+          <Text style={styles.sectionTitle}>{title}</Text>
+          <Text style={styles.sectionCopy}>{subtitle}</Text>
+        </View>
+      </View>
       {children}
     </View>
   );
 }
 
-function StatCard({ label, value, accent }: { label: string; value: string; accent: string }) {
+function StatCard({ label, value, gradient, accentColor, icon }: { label: string; value: string; gradient: [string, string]; accentColor: string; icon: keyof typeof Feather.glyphMap; }) {
   return (
-    <View style={styles.statCard}>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={[styles.statValue, { color: accent }]}>{value}</Text>
+    <View style={[styles.statCardOuter, styles.cardShadow]}>
+      <LinearGradient colors={gradient} style={StyleSheet.absoluteFillObject} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
+      <View style={styles.statCardInner}>
+        <View style={styles.statHeaderRow}>
+          <Text style={styles.statLabel}>{label}</Text>
+          <Feather name={icon} size={14} color={accentColor} />
+        </View>
+        <Text style={[styles.statValue, { color: accentColor }]}>{value}</Text>
+      </View>
     </View>
   );
 }
 
-function EmptyCard({ message }: { message: string }) {
+function EmptyCard({ message, icon }: { message: string; icon: keyof typeof Feather.glyphMap; }) {
   return (
-    <View style={styles.emptyCard}>
+    <View style={[styles.emptyCard, styles.cardShadow]}>
+      <View style={[styles.iconCircle, { backgroundColor: palette.surface2 }]}>
+        <Feather name={icon} size={24} color={palette.textDim} />
+      </View>
       <Text style={styles.emptyText}>{message}</Text>
     </View>
   );
 }
 
+// PREMIUM MIDNIGHT GLASS THEME
 const palette = {
-  bg: '#060a12',
-  surface: '#0d1422',
-  surface2: '#131d30',
-  surface3: '#1a2640',
-  border: '#1e2d48',
-  border2: '#253650',
-  gold: '#f0b429',
-  text: '#dde6f5',
-  textDim: '#91a7c7',
-  muted: '#5e7698',
-  red: '#f87171',
-  amber: '#fbbf24',
-  blue: '#38bdf8',
-  green: '#34d399',
+  bg: '#0B0914', // Very deep violet-black
+  surface: '#161224', // Deep indigo card background
+  surface2: '#201B34', // Slightly lighter indigo for inputs/chips
+  border: '#2A2346',
+  border2: '#3D3465',
+  borderGlow: 'rgba(139, 92, 246, 0.4)',
+  primary: '#8B5CF6', // Electric Purple
+  primaryDark: '#6D28D9',
+  cyan: '#06B6D4', // Neon Cyan
+  text: '#F8FAFC',
+  textDim: '#94A3B8',
+  muted: '#475569',
+  red: '#F43F5E',
+  amber: '#F59E0B',
+  green: '#10B981',
 };
 
 const styles = StyleSheet.create({
@@ -560,133 +641,141 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: palette.bg,
   },
+  cardShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 8,
+  },
   loadingWrap: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
-    gap: 12,
+    gap: 16,
   },
   loadingTitle: {
     color: palette.text,
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '800',
+    marginTop: 8,
   },
   loadingCopy: {
     color: palette.textDim,
-    fontSize: 14,
+    fontSize: 15,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
+  },
+  iconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   authScroll: {
     flexGrow: 1,
-    padding: 16,
-    paddingBottom: 32,
+    padding: 20,
+    paddingBottom: 40,
+    justifyContent: 'center',
   },
   authContent: {
-    gap: 16,
+    gap: 24,
+    marginTop: 20,
   },
   authHero: {
-    backgroundColor: palette.surface,
-    borderRadius: 24,
+    borderRadius: 32,
     borderWidth: 1,
     borderColor: palette.border,
-    padding: 20,
-    gap: 14,
+    padding: 28,
+    gap: 16,
+    overflow: 'hidden',
+    backgroundColor: palette.surface,
+    shadowColor: palette.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 10,
   },
   heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     alignSelf: 'flex-start',
     backgroundColor: palette.surface2,
     borderRadius: 999,
-    paddingVertical: 8,
+    paddingVertical: 6,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#6f5311',
-  },
-  heroBadgeIcon: {
-    backgroundColor: palette.gold,
-    color: palette.bg,
-    width: 32,
-    height: 32,
-    textAlign: 'center',
-    textAlignVertical: 'center',
-    borderRadius: 12,
-    overflow: 'hidden',
-    fontWeight: '800',
-    fontSize: 18,
-    lineHeight: 32,
-  },
-  heroBadgeTextWrap: {
-    gap: 2,
+    borderColor: palette.border2,
   },
   heroBadgeTitle: {
     color: palette.text,
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '800',
-  },
-  heroBadgeSub: {
-    color: palette.muted,
-    fontSize: 11,
+    letterSpacing: 0.5,
   },
   heroTitle: {
     color: palette.text,
-    fontSize: 31,
-    lineHeight: 34,
+    fontSize: 34,
+    lineHeight: 40,
     fontWeight: '900',
     letterSpacing: -1,
   },
   heroCopy: {
     color: palette.textDim,
     fontSize: 15,
-    lineHeight: 23,
+    lineHeight: 24,
   },
   authCard: {
     backgroundColor: palette.surface,
-    borderRadius: 24,
+    borderRadius: 32,
     borderWidth: 1,
     borderColor: palette.border,
-    padding: 20,
-    gap: 14,
+    padding: 24,
+    gap: 20,
   },
   modeTabs: {
     flexDirection: 'row',
-    backgroundColor: palette.surface2,
-    borderRadius: 16,
-    padding: 4,
-    gap: 4,
+    backgroundColor: palette.bg,
+    borderRadius: 20,
+    padding: 6,
+    borderWidth: 1,
+    borderColor: palette.border,
   },
   modeTab: {
     flex: 1,
-    borderRadius: 12,
-    paddingVertical: 11,
+    borderRadius: 16,
+    paddingVertical: 12,
     alignItems: 'center',
   },
   modeTabActive: {
-    backgroundColor: 'rgba(240,180,41,.12)',
-    borderWidth: 1,
-    borderColor: '#6f5311',
+    backgroundColor: palette.surface2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   modeTabText: {
-    color: palette.textDim,
-    fontWeight: '700',
+    color: palette.muted,
+    fontWeight: '800',
+    fontSize: 13,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   modeTabTextActive: {
-    color: palette.gold,
+    color: palette.text,
   },
   authTitle: {
     color: palette.text,
     fontSize: 24,
     lineHeight: 28,
-    fontWeight: '800',
-  },
-  authCopy: {
-    color: palette.textDim,
-    fontSize: 14,
-    lineHeight: 22,
-    marginTop: -2,
+    fontWeight: '900',
+    marginTop: 4,
   },
   fieldWrap: {
     gap: 8,
@@ -697,286 +786,383 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     textTransform: 'uppercase',
     letterSpacing: 1,
+    marginLeft: 4,
   },
-  input: {
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: palette.surface2,
     borderWidth: 1,
-    borderColor: palette.border2,
-    borderRadius: 16,
+    borderColor: palette.border,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  inputContainerFocused: {
+    borderColor: palette.primary,
+    backgroundColor: palette.surface,
+    shadowColor: palette.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  inputIcon: {
+    paddingLeft: 16,
+  },
+  input: {
+    flex: 1,
     paddingHorizontal: 16,
-    paddingVertical: 15,
+    paddingVertical: 16,
     fontSize: 16,
     color: palette.text,
   },
   errorCard: {
-    backgroundColor: 'rgba(74,16,16,.55)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(244, 63, 94, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(248,113,113,.35)',
+    borderColor: 'rgba(244, 63, 94, 0.3)',
     borderRadius: 16,
-    padding: 12,
+    padding: 14,
+    gap: 10,
   },
   errorText: {
+    flex: 1,
     color: palette.red,
     fontSize: 13,
     lineHeight: 20,
+    fontWeight: '600',
   },
   primaryButton: {
-    backgroundColor: palette.gold,
-    borderRadius: 16,
-    minHeight: 54,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginTop: 4,
   },
   primaryButtonDisabled: {
     opacity: 0.65,
   },
+  primaryButtonGradient: {
+    minHeight: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
   primaryButtonText: {
-    color: palette.bg,
+    color: palette.text,
     fontWeight: '900',
     fontSize: 16,
-  },
-  helperText: {
-    color: palette.muted,
-    fontSize: 12,
-    lineHeight: 19,
-    textAlign: 'center',
+    letterSpacing: 0.5,
   },
   appScroll: {
-    padding: 16,
-    gap: 16,
+    padding: 20,
+    gap: 24,
   },
   topCard: {
     backgroundColor: palette.surface,
-    borderRadius: 24,
+    borderRadius: 32,
     borderWidth: 1,
     borderColor: palette.border,
-    padding: 18,
-    gap: 16,
-  },
-  brandLine: {
-    color: palette.gold,
-    fontSize: 12,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 1.1,
+    padding: 24,
+    gap: 20,
+    overflow: 'hidden',
   },
   topCardHeader: {
-    gap: 16,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  workspacePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(6, 182, 212, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
+    gap: 6,
+  },
+  workspacePillText: {
+    color: palette.cyan,
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  highlightText: {
+    color: palette.text,
+    fontWeight: '800',
   },
   topCardTitle: {
     color: palette.text,
-    fontSize: 26,
-    lineHeight: 30,
+    fontSize: 28,
+    lineHeight: 34,
     fontWeight: '900',
-    marginTop: 4,
+    letterSpacing: -0.5,
   },
   topCardCopy: {
     color: palette.textDim,
     fontSize: 14,
     lineHeight: 22,
-    marginTop: 6,
+    marginTop: 4,
   },
-  secondaryButton: {
-    alignSelf: 'flex-start',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: palette.border2,
+  iconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: palette.surface2,
-  },
-  secondaryButtonText: {
-    color: palette.textDim,
-    fontWeight: '800',
-    fontSize: 13,
+    borderWidth: 1,
+    borderColor: palette.border,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   workspaceGrid: {
-    gap: 10,
+    gap: 12,
   },
   workspaceChip: {
-    backgroundColor: palette.surface2,
-    borderRadius: 18,
+    backgroundColor: palette.bg,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: palette.border2,
-    padding: 14,
+    borderColor: palette.border,
+    padding: 16,
   },
   workspaceChipActive: {
-    borderColor: '#6f5311',
-    backgroundColor: 'rgba(240,180,41,.12)',
+    borderColor: palette.cyan,
+    backgroundColor: 'rgba(6, 182, 212, 0.08)',
+    shadowColor: palette.cyan,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   workspaceChipTitle: {
     color: palette.text,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800',
   },
   workspaceChipTitleActive: {
-    color: '#f6cf70',
+    color: palette.cyan,
+  },
+  workspaceChipMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+    gap: 6,
   },
   workspaceChipMeta: {
     color: palette.muted,
-    fontSize: 11,
-    marginTop: 4,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   workspaceChipMetaActive: {
-    color: '#cfb270',
+    color: '#38bdf8', // Lighter cyan
+  },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: palette.muted,
+  },
+  dotActive: {
+    backgroundColor: palette.cyan,
+    opacity: 0.5,
   },
   section: {
-    gap: 10,
+    gap: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 4,
   },
   sectionTitle: {
     color: palette.text,
     fontSize: 20,
     fontWeight: '800',
+    letterSpacing: -0.5,
   },
   sectionCopy: {
     color: palette.textDim,
     fontSize: 13,
-    lineHeight: 20,
+    marginTop: 2,
   },
   statGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 12,
   },
-  statCard: {
-    backgroundColor: palette.surface,
-    borderRadius: 18,
+  statCardOuter: {
+    width: '48%',
+    minWidth: 150,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: palette.border,
-    padding: 14,
-    width: '48.5%',
-    minWidth: 150,
-    gap: 6,
+    overflow: 'hidden',
+    backgroundColor: palette.surface,
+  },
+  statCardInner: {
+    padding: 16,
+    gap: 12,
+  },
+  statHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   statLabel: {
-    color: palette.muted,
+    color: palette.textDim,
     fontSize: 11,
     fontWeight: '800',
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
   statValue: {
-    fontSize: 18,
-    lineHeight: 22,
+    fontSize: 22,
     fontWeight: '900',
+    letterSpacing: -0.5,
   },
   listCard: {
     backgroundColor: palette.surface,
-    borderRadius: 18,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: palette.border,
-    overflow: 'hidden',
   },
   listRow: {
-    paddingVertical: 14,
-    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+  },
+  listRowBorder: {
     borderBottomWidth: 1,
     borderBottomColor: palette.border,
   },
   personRowLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 14,
   },
-  personDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 999,
+  avatarStyle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  avatarText: {
+    color: palette.text,
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 1,
   },
   personTextWrap: {
     flex: 1,
-    gap: 3,
+    gap: 4,
   },
   listTitle: {
     color: palette.text,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '800',
   },
   listMeta: {
     color: palette.textDim,
-    fontSize: 12,
+    fontSize: 13,
   },
   moduleGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 12,
   },
   moduleCard: {
-    width: '48.5%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '48%',
     minWidth: 150,
     backgroundColor: palette.surface,
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: palette.border,
-    padding: 14,
-    gap: 6,
+    padding: 16,
   },
   moduleTitle: {
-    color: palette.text,
+    color: palette.textDim,
     fontSize: 14,
     fontWeight: '800',
   },
-  moduleMeta: {
-    color: palette.gold,
-    fontSize: 12,
-    fontWeight: '700',
-  },
   emptyCard: {
-    backgroundColor: palette.surface,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: palette.border,
-    padding: 18,
-  },
-  emptyText: {
-    color: palette.textDim,
-    fontSize: 13,
-    lineHeight: 20,
-  },
-  warningCard: {
-    backgroundColor: 'rgba(74,48,0,.45)',
-    borderWidth: 1,
-    borderColor: '#5a3a00',
-    borderRadius: 16,
-    padding: 12,
-  },
-  warningText: {
-    color: palette.amber,
-    fontSize: 13,
-    lineHeight: 20,
-  },
-  configCard: {
     backgroundColor: palette.surface,
     borderRadius: 24,
     borderWidth: 1,
     borderColor: palette.border,
-    padding: 20,
-    gap: 14,
+    padding: 32,
+    alignItems: 'center',
+    gap: 16,
+  },
+  emptyText: {
+    color: palette.textDim,
+    fontSize: 14,
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+  warningCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+    borderRadius: 20,
+    padding: 16,
+    gap: 12,
+  },
+  warningText: {
+    flex: 1,
+    color: palette.amber,
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: '600',
+  },
+  configCard: {
+    backgroundColor: palette.surface,
+    borderRadius: 32,
+    borderWidth: 1,
+    borderColor: palette.border,
+    padding: 28,
+    gap: 16,
+    alignItems: 'center',
   },
   configTitle: {
     color: palette.text,
-    fontSize: 28,
-    lineHeight: 32,
+    fontSize: 26,
     fontWeight: '900',
   },
   configCopy: {
     color: palette.textDim,
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 24,
+    textAlign: 'center',
   },
   configValue: {
-    color: palette.gold,
+    color: palette.cyan,
     fontWeight: '800',
   },
   codeBlock: {
-    backgroundColor: palette.surface2,
+    backgroundColor: palette.bg,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: palette.border2,
-    padding: 14,
+    borderColor: palette.border,
+    padding: 16,
+    width: '100%',
   },
   codeLine: {
-    color: palette.text,
+    color: palette.green,
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
     fontSize: 13,
     lineHeight: 20,
