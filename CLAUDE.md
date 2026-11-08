@@ -72,6 +72,10 @@ __tests__/ folders      logic.test.ts (rules), api.test.ts (client + token refre
 - Expenses are created with `groupId: null` in flat years (no months). Members archive; only admins delete or archive/restore years and months.
 - Change totals logic only in `src/expenses/logic.ts` and cover it in `logic.test.ts`.
 
+## Account deletion
+
+More > Delete account asks for the password and calls `POST /auth/delete-account`, then signs out locally. A shared workspace with no other admin is refused by the server (409); the screen shows that message as is. Google Play also needs a public web page and privacy policy (not in this repo).
+
 ## Home dashboard rules
 
 - The "current month" is chosen in `home/logic.ts` `pickCurrentPeriod` (period named after today's month and year, else the latest period with activity). Home passes it to Expenses via `go('expenses', { focus })`, so both screens show the same month.

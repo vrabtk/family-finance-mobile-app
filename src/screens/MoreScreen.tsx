@@ -2,10 +2,10 @@ import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { API_BASE_URL } from '../config';
-import { inviteMember } from '../api';
+import { deleteAccount, inviteMember } from '../api';
 import { errorMessage, useSession } from '../session';
 import { colors, radius, space, type } from '../theme';
-import { Badge, Button, Card, Chips, ErrorBanner, Field, IconName, Screen, SectionTitle } from '../ui';
+import { Badge, Button, Card, Chips, ErrorBanner, Field, IconName, Screen, SectionTitle, Sheet } from '../ui';
 import type { MoreKey } from '../navigation';
 
 const LINKS: Array<{ key: MoreKey; label: string; hint: string; icon: IconName }> = [
@@ -17,6 +17,7 @@ const LINKS: Array<{ key: MoreKey; label: string; hint: string; icon: IconName }
 
 export function MoreScreen({ open }: { open: (key: MoreKey) => void }) {
   const { session, workspace, signOut } = useSession();
+  const [deleting, setDeleting] = useState(false);
   return (
     <Screen title="More">
       <Card style={styles.profile}>
@@ -42,8 +43,45 @@ export function MoreScreen({ open }: { open: (key: MoreKey) => void }) {
       </Card>
 
       <Button label="Sign out" icon="log-out" variant="secondary" onPress={signOut} />
+      <Button label="Delete account" icon="trash-2" variant="ghost" onPress={() => setDeleting(true)} />
+      {deleting && <DeleteAccountSheet onClose={() => setDeleting(false)} />}
       <Text style={[type.small, { textAlign: 'center' }]} numberOfLines={1}>Server: {API_BASE_URL}</Text>
     </Screen>
+  );
+}
+
+// Asks for the password, deletes the account on the server, then signs out on this device.
+export function DeleteAccountSheet({ onClose }: { onClose: () => void }) {
+  const { signOut } = useSession();
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const confirm = async () => {
+    setBusy(true);
+    setError('');
+    try {
+      await deleteAccount(password);
+      await signOut();
+    } catch (e) {
+      setError(errorMessage(e));
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Sheet visible title="Delete your account?" onClose={onClose}>
+      <Text style={[type.body, { marginBottom: space.sm }]}>This permanently deletes your account and cannot be undone.</Text>
+      <Text style={[type.small, { marginBottom: space.md }]}>
+        Workspaces only you belong to are deleted with all their expenses, loans, banks and other data. In a workspace shared with others, ownership passes to another admin and the data stays for them.
+      </Text>
+      <Field label="Enter your password to confirm" value={password} onChangeText={setPassword} secure placeholder="Your password" />
+      <ErrorBanner message={error} />
+      <View style={{ flexDirection: 'row', gap: space.md, marginTop: space.sm }}>
+        <Button label="Cancel" variant="secondary" onPress={onClose} disabled={busy} style={{ flex: 1 }} />
+        <Button label="Delete my account" variant="danger" onPress={confirm} loading={busy} disabled={!password} style={{ flex: 2 }} />
+      </View>
+    </Sheet>
   );
 }
 

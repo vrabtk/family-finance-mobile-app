@@ -92,6 +92,9 @@ const w = (workspaceId: string) => `/workspaces/${workspaceId}`;
 export const login = (email: string, password: string) => send<any>('POST', '/auth/login', { email, password });
 export const signup = (name: string, email: string, password: string) => send<any>('POST', '/auth/signup', { name, email, password });
 export const logoutRemote = (refreshToken: string) => post('/auth/logout', { refreshToken });
+// Permanently deletes the signed-in account (password is re-checked on the server).
+export const deleteAccount = (password: string) =>
+  post<{ message: string; deletedWorkspaces: number; transferredWorkspaces: number }>('/auth/delete-account', { password });
 
 // ── Workspaces ───────────────────────────────────────────────────────────────
 export const getWorkspaces = () => get<Workspace[]>('/workspaces');
