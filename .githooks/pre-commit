@@ -1,0 +1,57 @@
+#!/bin/sh
+# Pre-commit guard: blocks secrets and personal-data exports from being committed.
+#   Enable once per clone:  git config core.hooksPath .githooks
+#   One deliberate exception: put the text  allow-secret  on that line.
+#   Last resort for a whole commit: git commit --no-verify   (avoid)
+# It never prints secret values, only the file name and what it looks like.
+
+bad=0
+block() { printf 'pre-commit: BLOCKED  %s\n' "$1" >&2; bad=1; }
+
+# Database URLs that are obviously examples are fine.
+PLACEHOLDER='\[PASSWORD\]|\[YOUR|YOUR[-_]|<[a-z_-]*>|:password@|:pass@|:postgres@|:user@|localhost|127\.0\.0\.1|host\.docker\.internal|example|stub|xxxx|\*\*\*|\.\.\.'
+
+files=$(git diff --cached --name-only --diff-filter=ACMR)
+
+# 1. File names that are secrets or personal data.
+printf '%s\n' "$files" | while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  case "$(basename "$f")" in
+    .env.example) ;;
+    .env|.env.*|*.pem|*.key|*.p12|*.pfx|*.jks|*.keystore|id_rsa|id_rsa.*|id_ed25519|id_ed25519.*|*service-account*.json|*credentials*.json|ff-key*)
+      echo "$f is a secret or credential file" ;;
+    family-finance-*.json)
+      echo "$f looks like a personal data export" ;;
+  esac
+done > /tmp/precommit-names.$$ 2>/dev/null
+if [ -s /tmp/precommit-names.$$ ]; then
+  while IFS= read -r msg; do block "$msg"; done < /tmp/precommit-names.$$
+fi
+rm -f /tmp/precommit-names.$$
+
+# 2. Secret-looking content in the lines being added.
+check() { # file label regex [placeholder-filter]
+  hits=$(printf '%s\n' "$added" | grep -E -- "$3" || true)
+  if [ -n "$hits" ] && [ -n "${4:-}" ]; then hits=$(printf '%s\n' "$hits" | grep -viE -- "$4" || true); fi
+  [ -n "$hits" ] && block "$1 contains $2"
+}
+
+for f in $files; do
+  case "$f" in package-lock.json|*.lock|*.png|*.jpg|*.ico|*.svg) continue ;; esac
+  added=$(git diff --cached -U0 --no-color -- "$f" | grep -E '^\+' | grep -vE '^\+\+\+' | grep -v 'allow-secret' || true)
+  [ -z "$added" ] && continue
+  check "$f" 'a private key'                 '-----BEGIN [A-Z ]*PRIVATE KEY-----'
+  check "$f" 'a JWT or Supabase API key'     'eyJ[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{10,}'
+  check "$f" 'a database URL with a password' 'postgres(ql)?://[^:@/[:space:]"'"'"']+:[^@[:space:]"'"'"']+@' "$PLACEHOLDER"
+  check "$f" 'a cloud or API token'          'AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|xox[bap]-[A-Za-z0-9-]{10,}|sk-[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{30,}|sb_secret_[A-Za-z0-9_]+|sbp_[a-f0-9]{20,}'
+done
+
+if [ "$bad" -ne 0 ]; then
+  {
+    echo
+    echo "Commit stopped. Unstage the file (git reset HEAD <file>) and add it to .gitignore, or move the value to .env."
+    echo "If a match is a harmless example, add the text 'allow-secret' on that line."
+  } >&2
+  exit 1
+fi
+exit 0

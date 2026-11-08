@@ -55,6 +55,16 @@ __tests__/ folders      logic.test.ts (rules), api.test.ts (client + token refre
 - The `__other_income__` expense category marks "Other income" rows (shared with the web app); keep it out of spending totals.
 - Keep `strict` TypeScript clean.
 
+
+## Secrets guard (read before committing)
+
+- A pre-commit hook in `.githooks/pre-commit` blocks secret files (`.env*` except `.env.example`, keys, certificates, keystores, `ff-key*`, personal data exports) and secret-looking content (private keys, JWT/Supabase keys, cloud/API tokens, database URLs with a real password). It never prints the values.
+- Turn it on once per clone: `git config core.hooksPath .githooks` (already set in this working copy; the hook script is pinned to LF by `.gitattributes`).
+- A harmless example line can carry the text `allow-secret`. Do not use `--no-verify` to get past it.
+- Real values live only in `.env` (git-ignored). Never paste keys or database URLs into code, docs, tests or Jira.
+- This repo is **public** on GitHub: assume everything committed is world-readable. `EXPO_PUBLIC_*` values are bundled into the app and are not secret either, so never put real keys in them.
+- `npm audit` lists findings in the Expo/Metro build tooling (fix needs an Expo SDK major upgrade); the app itself ships only the JS bundle. Apply `npm audit fix` (non-breaking) now and then, and plan the Expo upgrade.
+
 ## Expenses module rules (keep in sync with the web app)
 
 - A person belongs to a year/month only if they have a salary entry for it; "Remove from month" deletes that entry, not the person.

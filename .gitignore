@@ -42,3 +42,21 @@ yarn-error.*
 /android
 
 .idea/
+
+# --- Secrets and local data: never commit (keep .env.example as the template) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+*service-account*.json
+*credentials*.json
+ff-key*
+.claude/settings.local.json
+supabase/.temp/
