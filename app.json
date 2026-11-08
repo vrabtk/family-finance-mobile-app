@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Family Finance Mobile",
+    "name": "Family Finance",
     "slug": "family-finance-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,15 +16,21 @@
     },
     "android": {
       "softwareKeyboardLayoutMode": "resize",
-      "usesCleartextTraffic": true,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0F766E",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.harikrishna108.familyfinancemobile"
+      "package": "com.harikrishna108.familyfinancemobile",
+      "versionCode": 1,
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

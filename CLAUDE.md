@@ -72,6 +72,13 @@ __tests__/ folders      logic.test.ts (rules), api.test.ts (client + token refre
 - Expenses are created with `groupId: null` in flat years (no months). Members archive; only admins delete or archive/restore years and months.
 - Change totals logic only in `src/expenses/logic.ts` and cover it in `logic.test.ts`.
 
+## Release builds (Google Play)
+
+- `app.json` holds the static config; `app.config.js` sets `android.usesCleartextTraffic` to true only when `EXPO_PUBLIC_API_BASE_URL` starts with `http://` (local development). A release build must use an `https://` address.
+- `eas.json` has two profiles, both pointing at `https://ffbackendapi.duckdns.org/api/v1` (the address is baked into the build; `.env` is git-ignored and not uploaded): `preview` (APK for your own phone) and `production` (AAB for Play, version code auto-increments).
+- Build: `npx eas-cli login`, then `npx eas-cli build --platform android --profile preview` (first) and `--profile production`. The Android package name `com.harikrishna108.familyfinancemobile` cannot change after the first Play upload.
+- Icons are generated placeholders (teal coin with an F) in `assets/`; `assets/store/` has the 512 px Play icon and a placeholder feature graphic. Replace with real artwork when available.
+
 ## Account deletion
 
 More > Delete account asks for the password and calls `POST /auth/delete-account`, then signs out locally. A shared workspace with no other admin is refused by the server (409); the screen shows that message as is. Google Play also needs a public web page and privacy policy (not in this repo).
