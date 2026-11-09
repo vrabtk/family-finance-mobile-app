@@ -12,6 +12,7 @@ import { ExpensesScreen } from './src/screens/ExpensesScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { MoreScreen, SettingsScreen } from './src/screens/MoreScreen';
 import { InsuranceScreen, InvestmentsScreen, LoansScreen, OverviewScreen } from './src/screens/resources';
+import { FadeIn } from './src/motion';
 import { OptionsProvider } from './src/options';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { SessionProvider, useSession } from './src/session';
@@ -36,7 +37,7 @@ function Root() {
   if (status === 'config') return <ConfigScreen />;
   if (status === 'signedOut') return <AuthScreen />;
   // Keyed by workspace so every screen reloads cleanly after switching.
-  return <OptionsProvider key={workspace?.id ?? 'none'}><Main /></OptionsProvider>;
+  return <FadeIn key={workspace?.id ?? 'none'} from={0} style={{ flex: 1 }}><OptionsProvider><Main /></OptionsProvider></FadeIn>;
 }
 
 function Main() {

@@ -13,6 +13,9 @@ jest.mock('./src/motion', () => ({
   useReveal: () => 1,
   Reveal: ({ children }) => children,
   Pulse: () => null,
+  FadeIn: ({ children }) => children,
+  useReduceMotion: () => false,
+  easeNextLayout: () => {},
 }));
 jest.mock('react-native-svg', () => {
   const React = require('react');

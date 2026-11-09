@@ -1,6 +1,6 @@
 // Small motion helpers used by the Home dashboard. Kept in one module so tests can replace them with instant versions.
 import { ReactNode, useEffect, useRef, useState } from 'react';
-import { Animated, Platform, StyleProp, ViewStyle } from 'react-native';
+import { AccessibilityInfo, Animated, LayoutAnimation, Platform, StyleProp, ViewStyle } from 'react-native';
 
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
@@ -32,6 +32,38 @@ export function Reveal({ index = 0, children, style }: { index?: number; childre
   }, [value, index]);
   return (
     <Animated.View style={[style, { opacity: value, transform: [{ translateY: value.interpolate({ inputRange: [0, 1], outputRange: [18, 0] }) }] }]}>
+      {children}
+    </Animated.View>
+  );
+}
+
+// True when the phone asks for less motion (Android "remove animations", iOS "reduce motion").
+export function useReduceMotion(): boolean {
+  const [reduce, setReduce] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    AccessibilityInfo.isReduceMotionEnabled?.().then((v) => { if (alive) setReduce(!!v); }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  return reduce;
+}
+
+// Smooth the next layout change (a field appearing, a card growing). Does nothing when motion is reduced.
+export function easeNextLayout(reduce = false) {
+  if (reduce) return;
+  try { LayoutAnimation.configureNext(LayoutAnimation.create(220, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity)); } catch { /* not supported here */ }
+}
+
+// Fades and slides its content in when it appears. Give it a `key` that changes with the content to replay it.
+export function FadeIn({ children, style, from = 14 }: { children: ReactNode; style?: StyleProp<ViewStyle>; from?: number }) {
+  const reduce = useReduceMotion();
+  const value = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (reduce) { value.setValue(1); return; }
+    Animated.timing(value, { toValue: 1, duration: 260, useNativeDriver: Platform.OS !== 'web' }).start();
+  }, [value, reduce]);
+  return (
+    <Animated.View style={[style, { opacity: value, transform: [{ translateY: value.interpolate({ inputRange: [0, 1], outputRange: [from, 0] }) }] }]}>
       {children}
     </Animated.View>
   );

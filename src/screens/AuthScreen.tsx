@@ -4,6 +4,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { API_BASE_URL, HAS_API_CONFIG } from '../config';
 import { forgotPassword, resetPassword } from '../api';
+import { FadeIn, easeNextLayout, useReduceMotion } from '../motion';
 import { errorMessage, useSession } from '../session';
 import { colors, radius, space, type } from '../theme';
 import { Button, Card, ErrorBanner, Field } from '../ui';
@@ -16,6 +17,7 @@ export function AuthScreen() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const reduceMotion = useReduceMotion();
   const [forgot, setForgot] = useState(false);
   const [notice, setNotice] = useState('');
 
@@ -47,20 +49,20 @@ export function AuthScreen() {
           </View>
 
           {forgot ? (
-            <Card>
+            <FadeIn key="forgot"><Card>
               <ForgotFlow initialEmail={form.email} onDone={(message) => { setForgot(false); setMode('login'); setNotice(message); }} onCancel={() => setForgot(false)} />
-            </Card>
+            </Card></FadeIn>
           ) : (
-          <Card>
+          <FadeIn key="form"><Card>
             <View style={styles.toggle}>
               {(['login', 'signup'] as Mode[]).map((m) => (
-                <Pressable key={m} onPress={() => { setMode(m); setError(''); }} style={[styles.toggleItem, mode === m && styles.toggleOn]} accessibilityRole="tab" accessibilityState={{ selected: mode === m }}>
+                <Pressable key={m} onPress={() => { easeNextLayout(reduceMotion); setMode(m); setError(''); }} style={[styles.toggleItem, mode === m && styles.toggleOn]} accessibilityRole="tab" accessibilityState={{ selected: mode === m }}>
                   <Text style={[styles.toggleLabel, mode === m && { color: colors.primary }]}>{m === 'login' ? 'Sign in' : 'Create account'}</Text>
                 </Pressable>
               ))}
             </View>
 
-            {mode === 'signup' && <Field label="Name" value={form.name} onChangeText={set('name')} placeholder="Your name" autoCapitalize="words" />}
+            {mode === 'signup' && <FadeIn key="name" from={8}><Field label="Name" value={form.name} onChangeText={set('name')} placeholder="Your name" autoCapitalize="words" /></FadeIn>}
             <Field label="Email" value={form.email} onChangeText={set('email')} placeholder="you@example.com" keyboardType="email-address" />
             <Field label="Password" value={form.password} onChangeText={set('password')} placeholder={mode === 'signup' ? 'At least 8 characters' : 'Your password'} secure />
 
@@ -72,7 +74,7 @@ export function AuthScreen() {
                 <Text style={[type.small, { color: colors.primary, fontWeight: '700' }]}>Forgot password?</Text>
               </Pressable>
             )}
-          </Card>
+          </Card></FadeIn>
           )}
 
           <View style={styles.secure}>
