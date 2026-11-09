@@ -4,10 +4,6 @@ import { toNumber } from '../format';
 import type { Expense, ExpenseGroup, ExpenseYear, Person, SalaryEntry } from '../types';
 
 export const OTHER_INCOME = '__other_income__'; // category marker shared with the web app
-export const CATEGORIES = ['food', 'housing', 'transport', 'utilities', 'education', 'medical', 'entertainment', 'other'].map((c) => ({
-  value: c,
-  label: c[0].toUpperCase() + c.slice(1),
-}));
 export const PERSON_COLORS = ['#0F766E', '#2563EB', '#D97706', '#DB2777', '#7C3AED', '#16A34A', '#DC2626', '#0891B2'];
 
 // ── Periods ──────────────────────────────────────────────────────────────────

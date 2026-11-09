@@ -4,8 +4,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { inr } from '../../format';
 import type { ExpensesApi } from '../../expenses/useExpenses';
 import {
-  CATEGORIES, ExpenseForm, PERSON_COLORS, cleanLabel, emptyExpenseForm, formFromExpense, isArchivedPeriod, parseAmount, parseExpenseForm,
+  ExpenseForm, PERSON_COLORS, cleanLabel, emptyExpenseForm, formFromExpense, isArchivedPeriod, parseAmount, parseExpenseForm,
 } from '../../expenses/logic';
+import { OptionSelect } from '../../options';
 import { colors, space, type } from '../../theme';
 import type { Expense, Person } from '../../types';
 import { Button, Chips, ConfirmSheet, ErrorBanner, Field, Select, Sheet } from '../../ui';
@@ -57,7 +58,7 @@ export function ExpenseSheet({ x, item, onClose }: { x: ExpensesApi; item?: Expe
         <>
           <Field label="Name" value={form.label} onChangeText={set('label')} placeholder="e.g. Electricity bill" />
           <Field label="Amount (₹)" value={form.amount} onChangeText={set('amount')} keyboardType="decimal-pad" placeholder="0" />
-          <Select label="Category" options={CATEGORIES} value={form.category} onChange={set('category')} />
+          <OptionSelect label="Category" kind="expenseCategory" value={form.category} onChange={set('category')} autoPick={!item} />
           {choosable.length > 0 && (
             <Select label="Paid by" options={[{ value: '', label: 'Nobody' }, ...choosable.map((p) => ({ value: p.id, label: p.name }))]} value={form.personId} onChange={set('personId')} />
           )}

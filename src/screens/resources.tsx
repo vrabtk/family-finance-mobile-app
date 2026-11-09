@@ -1,5 +1,6 @@
 import { dateLabel, daysUntil, inr, inrCompact, toNumber } from '../format';
 import { insuranceApi, investmentsApi, loansApi, overviewApi } from '../api';
+import { capitalize } from '../options';
 import { ResourceConfig, ResourceScreen } from './ResourceScreen';
 
 const sum = (items: any[], key: string) => items.reduce((s, i) => s + toNumber(i[key]), 0);
@@ -8,13 +9,6 @@ const join = (...parts: Array<string | null | undefined | false>) => parts.filte
 const matchType = (item: any, value: string) => item.type === value;
 
 // ── Loans ────────────────────────────────────────────────────────────────────
-const LOAN_TYPES = [
-  { value: 'emi', label: 'Home / EMI' },
-  { value: 'credit', label: 'Credit card' },
-  { value: 'personal', label: 'Personal' },
-  { value: 'given', label: 'Given out' },
-];
-
 const loans: ResourceConfig = {
   title: 'Loans',
   noun: 'loan',
@@ -23,7 +17,7 @@ const loans: ResourceConfig = {
   crud: loansApi,
   fields: [
     { key: 'name', label: 'Name', kind: 'text', required: true, placeholder: 'e.g. Home loan' },
-    { key: 'type', label: 'Type', kind: 'select', options: LOAN_TYPES, required: true, defaultValue: 'emi' },
+    { key: 'type', label: 'Type', kind: 'option', optionKind: 'loanType', required: true },
     { key: 'who', label: 'Borrower / lender', kind: 'text' },
     { key: 'totalAmount', label: 'Total amount (₹)', kind: 'number' },
     { key: 'outstanding', label: 'Outstanding (₹)', kind: 'number' },
@@ -33,7 +27,7 @@ const loans: ResourceConfig = {
     { key: 'endDate', label: 'End date', kind: 'date' },
     { key: 'notes', label: 'Notes', kind: 'multiline' },
   ],
-  filter: { options: LOAN_TYPES, match: matchType },
+  filter: { optionKind: 'loanType', match: matchType },
   summary: (items) => {
     const owed = items.filter((i) => i.type !== 'given');
     return [
@@ -43,22 +37,13 @@ const loans: ResourceConfig = {
   },
   row: (l) => ({
     title: l.name,
-    subtitle: join(label(LOAN_TYPES, l.type), l.who, l.interestRate ? `${toNumber(l.interestRate)}%` : null),
+    subtitle: join(capitalize(l.type), l.who, l.interestRate ? `${toNumber(l.interestRate)}%` : null),
     amount: inr(l.outstanding),
     badge: toNumber(l.emi) ? { label: `${inr(l.emi)}/mo`, tone: l.type === 'given' ? 'positive' : 'warning' } : undefined,
   }),
 };
 
 // ── Investments ──────────────────────────────────────────────────────────────
-const INV_TYPES = [
-  { value: 'gold', label: 'Gold' },
-  { value: 'fd', label: 'Fixed deposit' },
-  { value: 'rd', label: 'Recurring deposit' },
-  { value: 'stock', label: 'Stocks' },
-  { value: 'mf', label: 'Mutual fund' },
-  { value: 'other', label: 'Other' },
-];
-
 const investments: ResourceConfig = {
   title: 'Investments',
   noun: 'investment',
@@ -67,7 +52,7 @@ const investments: ResourceConfig = {
   crud: investmentsApi,
   fields: [
     { key: 'name', label: 'Name', kind: 'text', required: true, placeholder: 'e.g. Family gold' },
-    { key: 'type', label: 'Type', kind: 'select', options: INV_TYPES, required: true, defaultValue: 'other' },
+    { key: 'type', label: 'Type', kind: 'option', optionKind: 'investmentType', required: true },
     { key: 'owner', label: 'Owner', kind: 'text' },
     { key: 'investedAmount', label: 'Invested (₹)', kind: 'number' },
     { key: 'currentValue', label: 'Current value (₹)', kind: 'number' },
@@ -77,7 +62,7 @@ const investments: ResourceConfig = {
     { key: 'maturityDate', label: 'Maturity date', kind: 'date' },
     { key: 'notes', label: 'Notes', kind: 'multiline' },
   ],
-  filter: { options: INV_TYPES, match: matchType },
+  filter: { optionKind: 'investmentType', match: matchType },
   summary: (items) => {
     const invested = sum(items, 'investedAmount');
     const current = sum(items, 'currentValue');
@@ -94,7 +79,7 @@ const investments: ResourceConfig = {
     const pct = invested > 0 ? (gain / invested) * 100 : null;
     return {
       title: i.name,
-      subtitle: join(label(INV_TYPES, i.type), i.owner, i.maturityDate ? `matures ${dateLabel(i.maturityDate)}` : null),
+      subtitle: join(capitalize(i.type), i.owner, i.maturityDate ? `matures ${dateLabel(i.maturityDate)}` : null),
       amount: inr(i.currentValue ?? i.investedAmount),
       badge: pct === null ? undefined : { label: `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`, tone: pct >= 0 ? 'positive' : 'negative' },
     };
@@ -102,13 +87,6 @@ const investments: ResourceConfig = {
 };
 
 // ── Insurance ────────────────────────────────────────────────────────────────
-const INS_TYPES = [
-  { value: 'life', label: 'Life' },
-  { value: 'health', label: 'Health' },
-  { value: 'term', label: 'Term' },
-  { value: 'vehicle', label: 'Vehicle' },
-  { value: 'other', label: 'Other' },
-];
 const INS_FREQ = [
   { value: 'monthly', label: 'Monthly' },
   { value: 'quarterly', label: 'Quarterly' },
@@ -125,7 +103,7 @@ const insurance: ResourceConfig = {
   crud: insuranceApi,
   fields: [
     { key: 'name', label: 'Policy name', kind: 'text', required: true, placeholder: 'e.g. Family floater' },
-    { key: 'type', label: 'Type', kind: 'select', options: INS_TYPES, required: true, defaultValue: 'health' },
+    { key: 'type', label: 'Type', kind: 'option', optionKind: 'insuranceType', required: true },
     { key: 'insuredPerson', label: 'Insured person', kind: 'text' },
     { key: 'policyNumber', label: 'Policy number', kind: 'text' },
     { key: 'premiumAmount', label: 'Premium (₹)', kind: 'number' },
@@ -136,7 +114,7 @@ const insurance: ResourceConfig = {
     { key: 'endDate', label: 'End date', kind: 'date' },
     { key: 'notes', label: 'Notes', kind: 'multiline' },
   ],
-  filter: { options: INS_TYPES, match: matchType },
+  filter: { optionKind: 'insuranceType', match: matchType },
   summary: (items) => [
     { label: 'Yearly premium', value: inrCompact(items.reduce((s, p) => s + toNumber(p.premiumAmount) * (PER_YEAR[p.frequency] ?? 1), 0)), tone: 'warning', icon: 'calendar' },
     { label: 'Total cover', value: inrCompact(sum(items, 'sumAssured')), tone: 'positive', icon: 'shield' },
@@ -147,7 +125,7 @@ const insurance: ResourceConfig = {
       due === null ? undefined : due < 0 ? { label: 'Overdue', tone: 'negative' } : due <= 30 ? { label: `Due in ${due}d`, tone: 'warning' } : undefined;
     return {
       title: p.name,
-      subtitle: join(label(INS_TYPES, p.type), p.insuredPerson, p.nextDueDate ? `due ${dateLabel(p.nextDueDate)}` : null),
+      subtitle: join(capitalize(p.type), p.insuredPerson, p.nextDueDate ? `due ${dateLabel(p.nextDueDate)}` : null),
       amount: `${inr(p.premiumAmount)}`,
       badge,
     };

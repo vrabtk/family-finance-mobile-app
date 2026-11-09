@@ -3,8 +3,10 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { Crud } from '../api';
 import { dateInput } from '../format';
 import { useAsync } from '../hooks';
+import { OptionSelect, capitalize, useOptions } from '../options';
 import { errorMessage, useSession } from '../session';
 import { space, type } from '../theme';
+import type { OptionKind } from '../types';
 import {
   Badge, Button, Card, Chips, ConfirmSheet, Empty, ErrorBanner, Fab, Field, IconName, Loading, Screen, SectionTitle, Sheet, Stat, Tone,
 } from '../ui';
@@ -12,7 +14,8 @@ import {
 export type FieldDef = {
   key: string;
   label: string;
-  kind: 'text' | 'number' | 'date' | 'select' | 'multiline';
+  kind: 'text' | 'number' | 'date' | 'select' | 'option' | 'multiline';
+  optionKind?: OptionKind; // for kind 'option': the user-managed list this field draws from
   options?: Array<{ value: string; label: string }>;
   required?: boolean;
   placeholder?: string;
@@ -38,7 +41,7 @@ export type ResourceConfig = {
   fields: FieldDef[];
   summary: (items: any[]) => SummaryTile[];
   row: (item: any) => RowView;
-  filter?: { options: Array<{ value: string; label: string }>; match: (item: any, value: string) => boolean };
+  filter?: { optionKind: OptionKind; match: (item: any, value: string) => boolean };
   groupOrder?: string[];
 };
 
@@ -75,6 +78,7 @@ export function ResourceScreen({ config, onBack }: { config: ResourceConfig; onB
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  const { names } = useOptions();
   const items = data ?? [];
   const visible = config.filter && filter !== 'all' ? items.filter((i) => config.filter!.match(i, filter)) : items;
 
@@ -159,7 +163,7 @@ export function ResourceScreen({ config, onBack }: { config: ResourceConfig; onB
               {config.summary(items).map((t) => <Stat key={t.label} label={t.label} value={t.value} tone={t.tone} icon={t.icon} />)}
             </View>
           )}
-          {config.filter && items.length > 0 && <Chips options={[{ value: 'all', label: 'All' }, ...config.filter.options]} value={filter} onChange={setFilter} />}
+          {config.filter && items.length > 0 && <Chips options={[{ value: 'all', label: 'All' }, ...names(config.filter.optionKind).map((n) => ({ value: n, label: capitalize(n) }))]} value={filter} onChange={setFilter} />}
 
           {rows.length === 0 ? (
             <Empty icon={config.icon} title={items.length ? 'Nothing matches this filter' : `No ${config.title.toLowerCase()} yet`} hint={items.length ? undefined : config.emptyHint} />
@@ -173,7 +177,9 @@ export function ResourceScreen({ config, onBack }: { config: ResourceConfig; onB
       )}
 
       <Sheet visible={editing !== null} title={editing === 'new' ? `Add ${config.noun}` : `Edit ${config.noun}`} onClose={close}>
-        {config.fields.map((f) => f.kind === 'select' ? (
+        {config.fields.map((f) => f.kind === 'option' ? (
+          <OptionSelect key={f.key} label={f.label} kind={f.optionKind!} value={form[f.key] ?? ''} onChange={(v) => setForm((s) => ({ ...s, [f.key]: v }))} autoPick={editing === 'new'} />
+        ) : f.kind === 'select' ? (
           <Chips key={f.key} label={f.label} options={f.options ?? []} value={form[f.key] ?? ''} onChange={(v) => setForm((s) => ({ ...s, [f.key]: v }))} />
         ) : (
           <Field

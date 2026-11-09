@@ -1,5 +1,9 @@
 export type Role = 'viewer' | 'member' | 'admin';
 
+export type OptionKind = 'expenseCategory' | 'loanType' | 'investmentType' | 'insuranceType';
+export type OptionItem = { id: string; name: string; sortOrder: number };
+export type OptionLists = Record<OptionKind, OptionItem[]>;
+
 export type Member = {
   userId: string; name: string; email: string; role: Role; blocked: boolean; joinedAt: string; isOwner: boolean;
 };

@@ -1,5 +1,5 @@
 import { API_BASE_URL } from './config';
-import type { Analytics, AnalyticsPeriod, Bank, Expense, ExpenseGroup, ExpenseYear, MobileSession, Person, SalaryEntry, Workspace, Member, Role } from './types';
+import type { Analytics, AnalyticsPeriod, Bank, Expense, ExpenseGroup, ExpenseYear, MobileSession, Person, SalaryEntry, Workspace, Member, Role, OptionKind, OptionLists } from './types';
 
 export class ApiError extends Error {
   status: number;
@@ -106,6 +106,10 @@ export const deleteAccount = (password: string) =>
 // ── Workspaces ───────────────────────────────────────────────────────────────
 export const getWorkspaces = () => get<Workspace[]>('/workspaces');
 export const inviteMember = (workspaceId: string, email: string, role: string) => post(`${w(workspaceId)}/invite`, { email, role });
+export const getOptions = (workspaceId: string) => get<OptionLists>(`${w(workspaceId)}/options`);
+export const addOption = (workspaceId: string, kind: OptionKind, name: string) => post(`${w(workspaceId)}/options`, { kind, name });
+export const renameOption = (workspaceId: string, id: string, name: string) => put(`${w(workspaceId)}/options/${id}`, { name });
+export const removeOption = (workspaceId: string, id: string) => del(`${w(workspaceId)}/options/${id}`);
 export const listMembers = (workspaceId: string) => get<Member[]>(`${w(workspaceId)}/members`);
 export const updateMember = (workspaceId: string, userId: string, change: { role?: Role; blocked?: boolean }) =>
   put<{ userId: string; role: Role; blocked: boolean }>(`${w(workspaceId)}/members/${userId}`, change);

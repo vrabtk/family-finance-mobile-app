@@ -1,6 +1,7 @@
 // The whole Expenses module (screen + hook + logic) against a stateful in-memory fake of the API.
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import * as apiModule from '../../api';
+import { OptionsProvider } from '../../options';
 import { ExpensesScreen } from '../ExpensesScreen';
 
 jest.mock('../../api');
@@ -102,12 +103,14 @@ function wireApi() {
 beforeEach(() => {
   seed();
   wireApi();
+  const choices = ['food', 'housing', 'transport', 'utilities', 'education', 'medical', 'entertainment', 'other'].map((name, i) => ({ id: `o${i}`, name, sortOrder: i }));
+  api.getOptions.mockResolvedValue({ expenseCategory: choices, loanType: [], investmentType: [], insuranceType: [] });
   Object.assign(mockSession, { canWrite: true, isAdmin: true });
 });
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 const as = (role: 'admin' | 'member' | 'viewer') => Object.assign(mockSession, { canWrite: role !== 'viewer', isAdmin: role === 'admin' });
-const open = async () => { render(<ExpensesScreen />); await screen.findByText('Left after expenses'); };
+const open = async () => { render(<OptionsProvider><ExpensesScreen /></OptionsProvider>); await screen.findByText('Left after expenses'); };
 const sheet = () => within(screen.getAllByTestId('sheet').at(-1)!); // topmost open sheet
 const closed = () => waitFor(() => expect(screen.queryAllByTestId('sheet').length).toBe(0));
 const gone = (text: string) => waitFor(() => expect(screen.queryAllByText(text).length).toBe(0));
@@ -144,14 +147,14 @@ describe('loading and summary', () => {
 
   test('over budget is shown as such', async () => {
     world.expenses.push({ id: 'big', yearId: 'y1', groupId: 'g1', label: 'Car', amount: '100000', status: 'pending', category: 'other', personId: null, isArchived: false });
-    render(<ExpensesScreen />);
+    render(<OptionsProvider><ExpensesScreen /></OptionsProvider>);
     await screen.findByText('Over budget');
     expect(screen.getByText('₹39,950')).toBeTruthy(); // 97,000 income − 136,950 spending
   });
 
   test('a failed load shows the error with a working Retry', async () => {
     api.getYears.mockRejectedValueOnce(new Error('Server down'));
-    render(<ExpensesScreen />);
+    render(<OptionsProvider><ExpensesScreen /></OptionsProvider>);
     await screen.findByText('Server down');
     fireEvent.press(screen.getByText('Retry'));
     await screen.findByText('Left after expenses');
@@ -159,14 +162,14 @@ describe('loading and summary', () => {
 
   test('no years: empty state, with add controls only for people who can write', async () => {
     world.years = []; world.groups = [];
-    render(<ExpensesScreen />);
+    render(<OptionsProvider><ExpensesScreen /></OptionsProvider>);
     await screen.findByText('No year yet');
     expect(screen.getByText('Add year')).toBeTruthy();
   });
 
   test('no years for a viewer: no add controls', async () => {
     as('viewer'); world.years = []; world.groups = [];
-    render(<ExpensesScreen />);
+    render(<OptionsProvider><ExpensesScreen /></OptionsProvider>);
     await screen.findByText('No year yet');
     expect(screen.queryByText('Add year')).toBeNull();
     expect(screen.getByText('Ask a workspace member to add a year.')).toBeTruthy();
@@ -174,7 +177,7 @@ describe('loading and summary', () => {
 
   test('a monthly year with no months asks for a month', async () => {
     world.groups = world.groups.filter((g) => g.yearId !== 'y1');
-    render(<ExpensesScreen />);
+    render(<OptionsProvider><ExpensesScreen /></OptionsProvider>);
     await screen.findByText('No month yet');
     expect(screen.getByText('Add month')).toBeTruthy();
   });
@@ -470,7 +473,7 @@ describe('expenses', () => {
 
   test('Paid by is only offered when the month has people with their own expenses', async () => {
     world.salaries = world.salaries.filter((s) => s.groupId !== 'g1'); // nobody in March, so the month is over budget
-    render(<ExpensesScreen />);
+    render(<OptionsProvider><ExpensesScreen /></OptionsProvider>);
     await screen.findByText('Over budget');
     fireEvent.press(screen.getByLabelText('Add expense'));
     expect(sheet().queryByLabelText('Paid by')).toBeNull();
