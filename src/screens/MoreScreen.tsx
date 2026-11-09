@@ -5,18 +5,17 @@ import { deleteAccount, inviteMember } from '../api';
 import { errorMessage, useSession } from '../session';
 import { colors, radius, space, type } from '../theme';
 import { Badge, Button, Card, Chips, ErrorBanner, Field, IconName, Screen, SectionTitle, Sheet } from '../ui';
-import type { MoreKey } from '../navigation';
+import { PINNABLE, PinKey } from '../navigation';
 import { MembersCard } from './Members';
 
-const LINKS: Array<{ key: MoreKey; label: string; hint: string; icon: IconName }> = [
+type MoreLink = { key: PinKey | 'profile' | 'tabs'; label: string; hint: string; icon: IconName };
+const FIXED_LINKS: MoreLink[] = [
   { key: 'profile', label: 'My profile', hint: 'Name, mobile number, password', icon: 'user' },
-  { key: 'investments', label: 'Investments', hint: 'Gold, deposits, stocks, funds', icon: 'trending-up' },
-  { key: 'insurance', label: 'Insurance', hint: 'Policies, premiums, due dates', icon: 'shield' },
-  { key: 'overview', label: 'Monthly overview', hint: 'Income, bills and savings', icon: 'layers' },
-  { key: 'settings', label: 'Workspace & members', hint: 'Switch workspace, invite people', icon: 'users' },
+  { key: 'tabs', label: 'Customize bottom bar', hint: 'Choose the three shortcuts next to Home', icon: 'sliders' },
 ];
 
-export function MoreScreen({ open }: { open: (key: MoreKey) => void }) {
+export function MoreScreen({ pins, open }: { pins: PinKey[]; open: (key: MoreLink['key']) => void }) {
+  const links: MoreLink[] = [...PINNABLE.filter((p) => !pins.includes(p.key)), ...FIXED_LINKS];
   const { session, workspace, signOut } = useSession();
   const [deleting, setDeleting] = useState(false);
   return (
@@ -31,7 +30,7 @@ export function MoreScreen({ open }: { open: (key: MoreKey) => void }) {
       </Card>
 
       <Card style={{ padding: 0 }}>
-        {LINKS.map((l, i) => (
+        {links.map((l, i) => (
           <Pressable key={l.key} onPress={() => open(l.key)} style={[styles.link, i > 0 && styles.divider]} accessibilityRole="button">
             <View style={styles.linkIcon}><Feather name={l.icon} size={18} color={colors.primary} /></View>
             <View style={{ flex: 1 }}>

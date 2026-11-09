@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import * as apiModule from '../../api';
+import { DEFAULT_PINS } from '../../navigation';
 import { MoreScreen } from '../MoreScreen';
 
 jest.mock('../../api');
@@ -12,12 +13,12 @@ jest.mock('../../session', () => ({
 }));
 
 const api = jest.mocked(apiModule) as any;
-const open = () => { render(<MoreScreen open={jest.fn()} />); fireEvent.press(screen.getByText('Delete account')); };
+const open = () => { render(<MoreScreen pins={DEFAULT_PINS} open={jest.fn()} />); fireEvent.press(screen.getByText('Delete account')); };
 const sheet = () => screen.getByTestId('sheet');
 const typePassword = (v: string) => fireEvent.changeText(screen.getByLabelText('Enter your password to confirm'), v);
 
 test('never shows the server address', () => {
-  render(<MoreScreen open={jest.fn()} />);
+  render(<MoreScreen pins={DEFAULT_PINS} open={jest.fn()} />);
   expect(screen.queryByText(/Server:/)).toBeNull();
   expect(screen.queryByText(/api\.test/)).toBeNull();
 });

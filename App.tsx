@@ -3,7 +3,9 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, BackHandler, Keyboard, KeyboardAvoidingView, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Focus, Go, MoreKey, TABS, TabKey } from './src/navigation';
+import { BarItem, DEFAULT_PINS, Focus, Go, MoreKey, PinKey, TabKey, activeBarKey, barItems, cleanPins, pinInfo } from './src/navigation';
+import { TabsScreen } from './src/screens/TabsScreen';
+import { loadPrefs, savePrefs } from './src/storage';
 import { AuthScreen, ConfigScreen } from './src/screens/AuthScreen';
 import { BanksScreen } from './src/screens/BanksScreen';
 import { ExpensesScreen } from './src/screens/ExpensesScreen';
@@ -39,6 +41,9 @@ function Root() {
 
 function Main() {
   const [tab, setTab] = useState<TabKey>('home');
+  const [pins, setPinsState] = useState<PinKey[]>(DEFAULT_PINS);
+  useEffect(() => { loadPrefs().then((p) => setPinsState(cleanPins(p.pins))); }, []);
+  const setPins = (next: PinKey[]) => { setPinsState(next); loadPrefs().then((p) => savePrefs({ ...p, pins: next })); };
   const [more, setMore] = useState<MoreKey | null>(null);
   const [focus, setFocus] = useState<Focus | undefined>();
 
@@ -54,7 +59,8 @@ function Main() {
 
   // One way to navigate: pick a tab, optionally a More sub-screen, optionally a month for Expenses.
   const go: Go = (next, options) => { setMore(options?.more ?? null); setFocus(options?.focus); setTab(next); };
-  const goTab = (next: TabKey) => go(next);
+  const goRoute = (r: { tab: TabKey; more?: MoreKey }) => go(r.tab, { more: r.more });
+  const openFromMore = (dest: PinKey | 'profile' | 'tabs') => (dest === 'profile' || dest === 'tabs' ? go('more', { more: dest }) : goRoute(pinInfo(dest).route));
   const back = () => setMore(null);
 
   let content;
@@ -63,13 +69,14 @@ function Main() {
       : more === 'insurance' ? <InsuranceScreen onBack={back} />
       : more === 'overview' ? <OverviewScreen onBack={back} />
       : more === 'profile' ? <ProfileScreen onBack={back} />
+      : more === 'tabs' ? <TabsScreen pins={pins} onChange={setPins} onBack={back} />
       : <SettingsScreen onBack={back} />;
   } else {
     content = tab === 'home' ? <HomeScreen go={go} />
       : tab === 'expenses' ? <ExpensesScreen key={focus ? `${focus.yearId}:${focus.groupId}` : 'default'} focus={focus} />
       : tab === 'loans' ? <LoansScreen />
       : tab === 'banks' ? <BanksScreen />
-      : <MoreScreen open={setMore} />;
+      : <MoreScreen pins={pins} open={openFromMore} />;
   }
 
   // Android draws edge to edge, so the window no longer resizes for the keyboard: pad the whole
@@ -84,19 +91,19 @@ function Main() {
   return (
     <KeyboardAvoidingView behavior="padding" style={{ flex: 1, backgroundColor: colors.bg }}>
       <View style={{ flex: 1 }}>{content}</View>
-      {!typing && <TabBar active={tab} onChange={goTab} />}
+      {!typing && <TabBar items={barItems(pins)} active={activeBarKey(pins, { tab, more: more ?? undefined })} onChange={goRoute} />}
     </KeyboardAvoidingView>
   );
 }
 
-function TabBar({ active, onChange }: { active: TabKey; onChange: (tab: TabKey) => void }) {
+function TabBar({ items, active, onChange }: { items: BarItem[]; active: string; onChange: (route: BarItem['route']) => void }) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, space.sm) }]} accessibilityRole="tablist">
-      {TABS.map((t) => {
+      {items.map((t) => {
         const on = t.key === active;
         return (
-          <Pressable key={t.key} onPress={() => onChange(t.key)} style={styles.tab} accessibilityRole="tab" accessibilityState={{ selected: on }} accessibilityLabel={t.label}>
+          <Pressable key={t.key} onPress={() => onChange(t.route)} style={styles.tab} accessibilityRole="tab" accessibilityState={{ selected: on }} accessibilityLabel={t.label}>
             <View style={[styles.tabPill, on && { backgroundColor: colors.primarySoft }]}>
               <Feather name={t.icon} size={20} color={on ? colors.primary : colors.muted} />
             </View>
