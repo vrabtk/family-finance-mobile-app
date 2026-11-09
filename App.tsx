@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, BackHandler, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, BackHandler, Keyboard, KeyboardAvoidingView, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Focus, Go, MoreKey, TABS, TabKey } from './src/navigation';
 import { AuthScreen, ConfigScreen } from './src/screens/AuthScreen';
@@ -69,11 +69,20 @@ function Main() {
       : <MoreScreen open={setMore} />;
   }
 
+  // Android draws edge to edge, so the window no longer resizes for the keyboard: pad the whole
+  // app instead, and hide the tab bar while typing so the form keeps the room.
+  const [typing, setTyping] = useState(false);
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () => setTyping(true));
+    const hide = Keyboard.addListener('keyboardDidHide', () => setTyping(false));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
+
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1, backgroundColor: colors.bg }}>
       <View style={{ flex: 1 }}>{content}</View>
-      <TabBar active={tab} onChange={goTab} />
-    </View>
+      {!typing && <TabBar active={tab} onChange={goTab} />}
+    </KeyboardAvoidingView>
   );
 }
 

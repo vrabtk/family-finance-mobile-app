@@ -16,6 +16,12 @@ const open = () => { render(<MoreScreen open={jest.fn()} />); fireEvent.press(sc
 const sheet = () => screen.getByTestId('sheet');
 const typePassword = (v: string) => fireEvent.changeText(screen.getByLabelText('Enter your password to confirm'), v);
 
+test('never shows the server address', () => {
+  render(<MoreScreen open={jest.fn()} />);
+  expect(screen.queryByText(/Server:/)).toBeNull();
+  expect(screen.queryByText(/api\.test/)).toBeNull();
+});
+
 describe('delete account', () => {
   test('is offered on the More screen and opens a confirmation that explains what is deleted', () => {
     open();

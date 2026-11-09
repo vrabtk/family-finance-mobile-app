@@ -1,7 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { API_BASE_URL } from '../config';
 import { deleteAccount, inviteMember } from '../api';
 import { errorMessage, useSession } from '../session';
 import { colors, radius, space, type } from '../theme';
@@ -45,7 +44,6 @@ export function MoreScreen({ open }: { open: (key: MoreKey) => void }) {
       <Button label="Sign out" icon="log-out" variant="secondary" onPress={signOut} />
       <Button label="Delete account" icon="trash-2" variant="ghost" onPress={() => setDeleting(true)} />
       {deleting && <DeleteAccountSheet onClose={() => setDeleting(false)} />}
-      <Text style={[type.small, { textAlign: 'center' }]} numberOfLines={1}>Server: {API_BASE_URL}</Text>
     </Screen>
   );
 }
