@@ -1,10 +1,11 @@
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { API_BASE_URL, HAS_API_CONFIG } from '../config';
 import { forgotPassword, resetPassword } from '../api';
 import { FadeIn, easeNextLayout, useReduceMotion } from '../motion';
+import { useKeyboardHeight } from '../hooks';
 import { errorMessage, useSession } from '../session';
 import { colors, radius, space, type } from '../theme';
 import { Button, Card, ErrorBanner, Field } from '../ui';
@@ -18,6 +19,7 @@ export function AuthScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const reduceMotion = useReduceMotion();
+  const keyboard = useKeyboardHeight();
   const [forgot, setForgot] = useState(false);
   const [notice, setNotice] = useState('');
 
@@ -40,7 +42,7 @@ export function AuthScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      <View style={{ flex: 1, paddingBottom: keyboard }}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
           <View style={styles.brand}>
             <View style={styles.logo}><Text style={styles.logoMark}>₹</Text></View>
@@ -82,7 +84,7 @@ export function AuthScreen() {
             <Text style={type.small}>Your session is kept in secure storage on this device.</Text>
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }

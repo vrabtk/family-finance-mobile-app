@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Keyboard } from 'react-native';
 import { errorMessage } from './session';
 
 // Loads data on mount / when deps change. `reload` is for pull-to-refresh (shows the spinner);
@@ -36,4 +37,16 @@ export function useAsync<T>(load: () => Promise<T>, deps: unknown[]) {
   }, deps);
 
   return { data, loading, refreshing, error, reload: () => run('refresh'), refetch: () => run('silent'), setData };
+}
+
+// Height of the on-screen keyboard, 0 when it is hidden. Android draws edge to edge, so screens pad themselves
+// by this instead of relying on KeyboardAvoidingView (which left a gap under the tab bar on some phones).
+export function useKeyboardHeight(): number {
+  const [height, setHeight] = useState(0);
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', (e) => setHeight(e.endCoordinates?.height ?? 0));
+    const hide = Keyboard.addListener('keyboardDidHide', () => setHeight(0));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
+  return height;
 }

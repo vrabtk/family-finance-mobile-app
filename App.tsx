@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, BackHandler, Keyboard, KeyboardAvoidingView, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, BackHandler, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BarItem, DEFAULT_PINS, Focus, Go, MoreKey, PinKey, TabKey, activeBarKey, barItems, cleanPins, pinInfo } from './src/navigation';
 import { TabsScreen } from './src/screens/TabsScreen';
@@ -14,6 +14,7 @@ import { ExpensesScreen } from './src/screens/ExpensesScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { MoreScreen, SettingsScreen } from './src/screens/MoreScreen';
 import { InsuranceScreen, InvestmentsScreen, LoansScreen, OverviewScreen } from './src/screens/resources';
+import { useKeyboardHeight } from './src/hooks';
 import { FadeIn } from './src/motion';
 import { OptionsProvider } from './src/options';
 import { ProfileScreen } from './src/screens/ProfileScreen';
@@ -86,18 +87,14 @@ function Main() {
 
   // Android draws edge to edge, so the window no longer resizes for the keyboard: pad the whole
   // app instead, and hide the tab bar while typing so the form keeps the room.
-  const [typing, setTyping] = useState(false);
-  useEffect(() => {
-    const show = Keyboard.addListener('keyboardDidShow', () => setTyping(true));
-    const hide = Keyboard.addListener('keyboardDidHide', () => setTyping(false));
-    return () => { show.remove(); hide.remove(); };
-  }, []);
+  const keyboard = useKeyboardHeight();
+  const typing = keyboard > 0;
 
   return (
-    <KeyboardAvoidingView behavior="padding" style={{ flex: 1, backgroundColor: colors.bg }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg, paddingBottom: keyboard }}>
       <View style={{ flex: 1 }}>{content}</View>
       {!typing && <TabBar items={barItems(pins)} active={activeBarKey(pins, { tab, more: more ?? undefined })} onChange={goRoute} />}
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

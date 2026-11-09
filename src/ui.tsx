@@ -1,11 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import { ReactNode, useState } from 'react';
 import {
-  ActivityIndicator, KeyboardAvoidingView, KeyboardTypeOptions, Modal, Platform, Pressable, RefreshControl,
+  ActivityIndicator, KeyboardTypeOptions, Modal, Platform, Pressable, RefreshControl,
   ScrollView, StyleSheet, Text, TextInput, View, ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius, shadow, space, type } from './theme';
+import { useKeyboardHeight } from './hooks';
 
 export type IconName = keyof typeof Feather.glyphMap;
 export type Tone = 'neutral' | 'positive' | 'negative' | 'warning' | 'info' | 'primary';
@@ -281,9 +282,10 @@ export function ErrorBanner({ message, onRetry }: { message: string; onRetry?: (
 type SheetProps = { visible: boolean; title: string; onClose: () => void; children: ReactNode };
 
 export function Sheet({ visible, title, onClose, children }: SheetProps) {
+  const keyboard = useKeyboardHeight();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior="padding" style={styles.overlay}>
+      <View style={[styles.overlay, { paddingBottom: keyboard }]}>
         <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityLabel="Dismiss" />
         <View style={styles.sheet} testID="sheet">
           <View style={styles.sheetHandle} />
@@ -293,7 +295,7 @@ export function Sheet({ visible, title, onClose, children }: SheetProps) {
           </View>
           <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: space.xl }}>{children}</ScrollView>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }
@@ -358,5 +360,5 @@ const styles = StyleSheet.create({
   sheet: { backgroundColor: colors.surface, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, padding: space.lg, maxHeight: '88%' },
   sheetHandle: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: colors.borderStrong, marginBottom: space.md },
   sheetHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: space.lg },
-  fab: { position: 'absolute', right: space.lg, bottom: 72, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', ...shadow, shadowOpacity: 0.25 },
+  fab: { position: 'absolute', right: space.lg, bottom: 20, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', ...shadow, shadowOpacity: 0.25 },
 });
