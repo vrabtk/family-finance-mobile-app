@@ -1,16 +1,17 @@
 import type { IconName } from './ui';
 
 export type TabKey = 'home' | 'expenses' | 'loans' | 'banks' | 'more';
-export type MoreKey = 'investments' | 'insurance' | 'overview' | 'settings' | 'profile' | 'tabs';
+export type MoreKey = 'investments' | 'insurance' | 'overview' | 'settings' | 'profile' | 'tabs' | 'analytics';
 
 // Every screen except Home and More can be pinned to the bottom bar; the rest are listed under More.
-export type PinKey = 'expenses' | 'loans' | 'banks' | 'investments' | 'insurance' | 'overview' | 'settings';
+export type PinKey = 'expenses' | 'loans' | 'banks' | 'investments' | 'insurance' | 'overview' | 'settings' | 'analytics';
 export type Route = { tab: TabKey; more?: MoreKey };
 
 export const PINNABLE: Array<{ key: PinKey; label: string; hint: string; icon: IconName; route: Route }> = [
   { key: 'expenses', label: 'Expenses', hint: 'Months, salaries and bills', icon: 'shopping-bag', route: { tab: 'expenses' } },
   { key: 'loans', label: 'Loans', hint: 'EMIs, cards and money lent', icon: 'percent', route: { tab: 'loans' } },
   { key: 'banks', label: 'Banks', hint: 'Accounts and balances', icon: 'briefcase', route: { tab: 'banks' } },
+  { key: 'analytics', label: 'Analytics', hint: 'Trends, savings rate, categories', icon: 'bar-chart-2', route: { tab: 'more', more: 'analytics' } },
   { key: 'investments', label: 'Investments', hint: 'Gold, deposits, stocks, funds', icon: 'trending-up', route: { tab: 'more', more: 'investments' } },
   { key: 'insurance', label: 'Insurance', hint: 'Policies, premiums, due dates', icon: 'shield', route: { tab: 'more', more: 'insurance' } },
   { key: 'overview', label: 'Monthly overview', hint: 'Income, bills and savings', icon: 'layers', route: { tab: 'more', more: 'overview' } },

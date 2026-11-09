@@ -7,6 +7,7 @@ import { BarItem, DEFAULT_PINS, Focus, Go, MoreKey, PinKey, TabKey, activeBarKey
 import { TabsScreen } from './src/screens/TabsScreen';
 import { loadPrefs, savePrefs } from './src/storage';
 import { AuthScreen, ConfigScreen } from './src/screens/AuthScreen';
+import { AnalyticsScreen } from './src/screens/AnalyticsScreen';
 import { BanksScreen } from './src/screens/BanksScreen';
 import { ExpensesScreen } from './src/screens/ExpensesScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
@@ -70,6 +71,7 @@ function Main() {
       : more === 'insurance' ? <InsuranceScreen onBack={back} />
       : more === 'overview' ? <OverviewScreen onBack={back} />
       : more === 'profile' ? <ProfileScreen onBack={back} />
+      : more === 'analytics' ? <AnalyticsScreen onBack={back} />
       : more === 'tabs' ? <TabsScreen pins={pins} onChange={setPins} onBack={back} />
       : <SettingsScreen onBack={back} />;
   } else {
