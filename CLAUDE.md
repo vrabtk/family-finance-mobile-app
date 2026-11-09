@@ -4,7 +4,7 @@ Guidance for Claude Code when working in `family-finance-mobile`.
 
 ## Status
 
-Expo / React Native client for the shared backend (`../family-finance-backend`). Light "clean fintech" theme (white cards on `#F6F8FA`, teal `#0F766E` accent). Screens: sign in / sign up, Home dashboard (net worth hero with count-up and hide toggle, this-month ring, 6-month income vs spending chart, spending by category, needs-attention list of unpaid bills and insurance dues, glance tiles; tapping anything opens the right screen/month), Expenses (complete: years and months incl. rename/archive/restore/delete, people and salaries per period, other income, expenses with add/edit/paid toggle/archive/restore/delete, search and filters, per-person breakdown), Loans, Banks, Investments, Insurance, Monthly overview, Workspace & members (switch workspace, invite). Not on mobile yet: JSON import, analytics charts, editing a person's name/colour (only per-period salary), permanent person delete. Not yet tested on a physical device or emulator; layouts were checked on the web build at 390x844.
+Expo / React Native client for the shared backend (`../family-finance-backend`). Light "clean fintech" theme (white cards on `#F6F8FA`, teal `#0F766E` accent). Screens: sign in / sign up, Home dashboard (net worth hero with count-up and hide toggle, this-month ring, 6-month income vs spending chart, spending by category, needs-attention list of unpaid bills and insurance dues, glance tiles; tapping anything opens the right screen/month), Expenses (complete: years and months incl. rename/archive/restore/delete, people and salaries per period, other income, expenses with add/edit/paid toggle/archive/restore/delete, search and filters, per-person breakdown), Loans, Banks, Investments, Insurance, Monthly overview, Workspace & members (switch workspace, invite). Not on mobile yet: the legacy single-file JSON import, editing a person's name/colour (only per-period salary), permanent person delete. Not yet tested on a physical device or emulator; layouts were checked on the web build at 390x844.
 
 ## Stack
 
@@ -55,6 +55,15 @@ __tests__/ folders      logic.test.ts (rules), api.test.ts (client + token refre
 - The `__other_income__` expense category marks "Other income" rows (shared with the web app); keep it out of spending totals.
 - Keep `strict` TypeScript clean.
 
+
+## Features added after the first release (keep in mind when editing)
+
+- **Keyboard:** `App.tsx` wraps the app in a padded `KeyboardAvoidingView` (Android is edge to edge, so the OS no longer resizes) and hides the tab bar while the keyboard is open; `Sheet` and `AuthScreen` use `behavior="padding"` on both platforms.
+- **Bottom bar:** Home + three user-pinned screens + More. Pure rules in `navigation.ts` (`PINNABLE`, `cleanPins`, `togglePin`, `movePin`, `activeBarKey`); pins are stored on the device with `storage.ts` `loadPrefs/savePrefs`. `MoreScreen` lists every pinnable screen that is not pinned. New screens: add to `PINNABLE` (and `MoreKey`) and route them in `App.tsx`.
+- **Choices are dynamic** (`src/options.tsx`): expense categories and loan/investment/insurance types come from `GET /workspaces/:id/options`. Use `<OptionSelect kind=... />` or a `kind: 'option'` field in `resources.tsx`; never hard-code a list. Overview category and the two frequency lists stay fixed on purpose (the totals depend on them).
+- **Members** (`screens/Members.tsx`), **profile and password** (`ProfileScreen.tsx`), **forgot password** (`ForgotFlow` in `AuthScreen.tsx`), **analytics** (`analytics/logic.ts` + `AnalyticsScreen.tsx`), **export/import** (`backup.ts` + `DataScreen.tsx`; needs `expo-document-picker`, `expo-sharing`, `expo-file-system`, so it needs a new native build), years/months **reorder** (up/down in the Manage sheet, `moveId` in `expenses/logic.ts`).
+- `session.tsx` has `patchSession` for changing the stored user or tokens (profile edits, password change).
+- The server address is never shown in the UI.
 
 ## Secrets guard (read before committing)
 

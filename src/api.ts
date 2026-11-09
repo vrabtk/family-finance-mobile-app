@@ -110,6 +110,8 @@ export const getOptions = (workspaceId: string) => get<OptionLists>(`${w(workspa
 export const addOption = (workspaceId: string, kind: OptionKind, name: string) => post(`${w(workspaceId)}/options`, { kind, name });
 export const renameOption = (workspaceId: string, id: string, name: string) => put(`${w(workspaceId)}/options/${id}`, { name });
 export const removeOption = (workspaceId: string, id: string) => del(`${w(workspaceId)}/options/${id}`);
+export const getExport = (workspaceId: string) => get<Record<string, unknown>>(`${w(workspaceId)}/export`);
+export const importBackup = (workspaceId: string, file: object) => post<{ message: string; counts: Record<string, number> }>(`${w(workspaceId)}/import-backup`, file as Record<string, unknown>);
 export const listMembers = (workspaceId: string) => get<Member[]>(`${w(workspaceId)}/members`);
 export const updateMember = (workspaceId: string, userId: string, change: { role?: Role; blocked?: boolean }) =>
   put<{ userId: string; role: Role; blocked: boolean }>(`${w(workspaceId)}/members/${userId}`, change);

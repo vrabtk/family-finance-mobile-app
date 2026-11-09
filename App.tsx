@@ -7,6 +7,7 @@ import { BarItem, DEFAULT_PINS, Focus, Go, MoreKey, PinKey, TabKey, activeBarKey
 import { TabsScreen } from './src/screens/TabsScreen';
 import { loadPrefs, savePrefs } from './src/storage';
 import { AuthScreen, ConfigScreen } from './src/screens/AuthScreen';
+import { DataScreen } from './src/screens/DataScreen';
 import { AnalyticsScreen } from './src/screens/AnalyticsScreen';
 import { BanksScreen } from './src/screens/BanksScreen';
 import { ExpensesScreen } from './src/screens/ExpensesScreen';
@@ -62,7 +63,7 @@ function Main() {
   // One way to navigate: pick a tab, optionally a More sub-screen, optionally a month for Expenses.
   const go: Go = (next, options) => { setMore(options?.more ?? null); setFocus(options?.focus); setTab(next); };
   const goRoute = (r: { tab: TabKey; more?: MoreKey }) => go(r.tab, { more: r.more });
-  const openFromMore = (dest: PinKey | 'profile' | 'tabs') => (dest === 'profile' || dest === 'tabs' ? go('more', { more: dest }) : goRoute(pinInfo(dest).route));
+  const openFromMore = (dest: PinKey | 'profile' | 'tabs' | 'data') => (dest === 'profile' || dest === 'tabs' || dest === 'data' ? go('more', { more: dest }) : goRoute(pinInfo(dest).route));
   const back = () => setMore(null);
 
   let content;
@@ -72,6 +73,7 @@ function Main() {
       : more === 'overview' ? <OverviewScreen onBack={back} />
       : more === 'profile' ? <ProfileScreen onBack={back} />
       : more === 'analytics' ? <AnalyticsScreen onBack={back} />
+      : more === 'data' ? <DataScreen onBack={back} />
       : more === 'tabs' ? <TabsScreen pins={pins} onChange={setPins} onBack={back} />
       : <SettingsScreen onBack={back} />;
   } else {

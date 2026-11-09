@@ -8,9 +8,10 @@ import { Badge, Button, Card, Chips, ErrorBanner, Field, IconName, Screen, Secti
 import { PINNABLE, PinKey } from '../navigation';
 import { MembersCard } from './Members';
 
-type MoreLink = { key: PinKey | 'profile' | 'tabs'; label: string; hint: string; icon: IconName };
+type MoreLink = { key: PinKey | 'profile' | 'tabs' | 'data'; label: string; hint: string; icon: IconName };
 const FIXED_LINKS: MoreLink[] = [
   { key: 'profile', label: 'My profile', hint: 'Name, mobile number, password', icon: 'user' },
+  { key: 'data', label: 'Export and import', hint: 'Back up or restore your data', icon: 'download' },
   { key: 'tabs', label: 'Customize bottom bar', hint: 'Choose the three shortcuts next to Home', icon: 'sliders' },
 ];
 

@@ -298,12 +298,13 @@ export function Sheet({ visible, title, onClose, children }: SheetProps) {
   );
 }
 
-export function ConfirmSheet({ visible, title, message, confirmLabel = 'Remove', onConfirm, onClose }: {
-  visible: boolean; title: string; message: string; confirmLabel?: string; onConfirm: () => void; onClose: () => void;
+export function ConfirmSheet({ visible, title, message, confirmLabel = 'Remove', onConfirm, onClose, details }: {
+  visible: boolean; title: string; message: string; confirmLabel?: string; onConfirm: () => void; onClose: () => void; details?: ReactNode;
 }) {
   return (
     <Sheet visible={visible} title={title} onClose={onClose}>
-      <Text style={[type.body, { marginBottom: space.lg }]}>{message}</Text>
+      {!!message && <Text style={[type.body, { marginBottom: space.lg }]}>{message}</Text>}
+      {details}
       <View style={{ flexDirection: 'row', gap: space.md }}>
         <Button label="Cancel" variant="secondary" onPress={onClose} style={{ flex: 1 }} />
         <Button label={confirmLabel} variant="danger" onPress={onConfirm} style={{ flex: 1 }} />
