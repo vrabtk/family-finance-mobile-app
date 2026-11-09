@@ -7,6 +7,16 @@ export const OTHER_INCOME = '__other_income__'; // category marker shared with t
 export const PERSON_COLORS = ['#0F766E', '#2563EB', '#D97706', '#DB2777', '#7C3AED', '#16A34A', '#DC2626', '#0891B2'];
 
 // ── Periods ──────────────────────────────────────────────────────────────────
+// New id order after moving one item up (-1) or down (+1). Moving past either end changes nothing.
+export function moveId(ids: string[], id: string, delta: -1 | 1): string[] {
+  const from = ids.indexOf(id);
+  const to = from + delta;
+  if (from < 0 || to < 0 || to >= ids.length) return ids;
+  const next = [...ids];
+  next.splice(to, 0, next.splice(from, 1)[0]);
+  return next;
+}
+
 export const isArchivedPeriod = (p?: { status?: string } | null) => p?.status === 'archived';
 
 export const visibleGroups = (year: ExpenseYear | null | undefined, showArchived: boolean): ExpenseGroup[] =>

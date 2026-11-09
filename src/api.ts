@@ -129,12 +129,14 @@ export const createPerson = (workspaceId: string, data: { name: string; color?: 
 export const getYears = (workspaceId: string, includeArchived = false) =>
   get<ExpenseYear[]>(`${w(workspaceId)}/years${qs({ includeArchived: flag(includeArchived) })}`);
 export const createYear = (workspaceId: string, label: string, hasSubgroups: boolean) => post<ExpenseYear>(`${w(workspaceId)}/years`, { label, hasSubgroups });
+export const reorderYears = (workspaceId: string, ids: string[]) => put(`${w(workspaceId)}/years/order`, { ids });
 export const updateYear = (workspaceId: string, id: string, label: string) => put<ExpenseYear>(`${w(workspaceId)}/years/${id}`, { label });
 export const archiveYear = (workspaceId: string, id: string) => post(`${w(workspaceId)}/years/${id}/archive`);
 export const restoreYear = (workspaceId: string, id: string) => post(`${w(workspaceId)}/years/${id}/restore`);
 export const deleteYear = (workspaceId: string, id: string) => del(`${w(workspaceId)}/years/${id}`);
 
 const groupPath = (workspaceId: string, yearId: string) => `${w(workspaceId)}/years/${yearId}/groups`;
+export const reorderGroups = (workspaceId: string, yearId: string, ids: string[]) => put(`${groupPath(workspaceId, yearId)}/order`, { ids });
 export const createGroup = (workspaceId: string, yearId: string, label: string) => post<ExpenseGroup>(groupPath(workspaceId, yearId), { label });
 export const updateGroup = (workspaceId: string, yearId: string, id: string, label: string) => put<ExpenseGroup>(`${groupPath(workspaceId, yearId)}/${id}`, { label });
 export const archiveGroup = (workspaceId: string, yearId: string, id: string) => post(`${groupPath(workspaceId, yearId)}/${id}/archive`);

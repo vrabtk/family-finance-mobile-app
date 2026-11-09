@@ -1,7 +1,7 @@
 import type { Expense, ExpenseGroup, ExpenseYear, Person, SalaryEntry } from '../../types';
 import {
   ExpenseFilter, OTHER_INCOME, UNASSIGNED, cleanLabel, emptyExpenseForm, filterExpenses, formFromExpense, inScope, isArchivedPeriod, nextIncomeLabel,
-  parseAmount, parseExpenseForm, pct, personsInScope, scopeFor, summarize, visibleGroups,
+  moveId, parseAmount, parseExpenseForm, pct, personsInScope, scopeFor, summarize, visibleGroups,
 } from '../logic';
 
 // ── fixtures ─────────────────────────────────────────────────────────────────
@@ -47,6 +47,21 @@ describe('periods', () => {
     expect(inScope(exp('c', { yearId: 'y9' }), scope)).toBe(false);
     expect(inScope(exp('d', { yearId: 'y2', groupId: null }), { yearId: 'y2', groupId: null })).toBe(true);
     expect(inScope(exp('e'), null)).toBe(false);
+  });
+});
+
+describe('moveId', () => {
+  test('moves one step up or down', () => {
+    expect(moveId(['a', 'b', 'c'], 'c', -1)).toEqual(['a', 'c', 'b']);
+    expect(moveId(['a', 'b', 'c'], 'a', 1)).toEqual(['b', 'a', 'c']);
+  });
+  test('does nothing past either end or for an unknown id, and never changes the input', () => {
+    const ids = ['a', 'b'];
+    expect(moveId(ids, 'a', -1)).toEqual(['a', 'b']);
+    expect(moveId(ids, 'b', 1)).toEqual(['a', 'b']);
+    expect(moveId(ids, 'z', 1)).toEqual(['a', 'b']);
+    expect(moveId(ids, 'b', -1)).toEqual(['b', 'a']);
+    expect(ids).toEqual(['a', 'b']);
   });
 });
 

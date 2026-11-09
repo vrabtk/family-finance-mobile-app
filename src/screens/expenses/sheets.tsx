@@ -9,7 +9,7 @@ import {
 import { OptionSelect } from '../../options';
 import { colors, space, type } from '../../theme';
 import type { Expense, Person } from '../../types';
-import { Button, Chips, ConfirmSheet, ErrorBanner, Field, Select, Sheet } from '../../ui';
+import { Button, Chips, ConfirmSheet, ErrorBanner, Field, IconButton, Select, Sheet } from '../../ui';
 
 // Runs an action that returns an error message (or null) and closes the sheet on success.
 function useSubmit(onDone: () => void) {
@@ -215,6 +215,22 @@ export function PeriodSheet({ x, mode, onClose }: { x: ExpensesApi; mode: Period
 }
 
 // Everything that acts on the selected year / month, plus the "show archived" switch.
+// Years or months in their current order, each with move up / move down.
+function OrderList({ title, items, onMove }: { title: string; items: Array<{ id: string; label: string }>; onMove: (id: string, delta: -1 | 1) => void }) {
+  return (
+    <View style={{ gap: space.xs }}>
+      <Text style={type.small}>{title}</Text>
+      {items.map((it, i) => (
+        <View key={it.id} style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
+          <Text style={[type.body, { flex: 1 }]} numberOfLines={1}>{it.label}</Text>
+          <IconButton icon="arrow-up" label={`Move ${it.label} up`} onPress={() => i > 0 && onMove(it.id, -1)} />
+          <IconButton icon="arrow-down" label={`Move ${it.label} down`} onPress={() => i < items.length - 1 && onMove(it.id, 1)} />
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export function ManageSheet({ x, onClose, open }: { x: ExpensesApi; onClose: () => void; open: (mode: PeriodMode) => void }) {
   const [confirm, setConfirm] = useState<null | { title: string; message: string; label: string; run: () => Promise<string | null> }>(null);
   const [error, setError] = useState('');
@@ -238,6 +254,14 @@ export function ManageSheet({ x, onClose, open }: { x: ExpensesApi; onClose: () 
         onChange={(v) => x.setShowArchived(v === 'show')}
       />
       <ErrorBanner message={error} />
+
+      {x.canWrite && (x.years.length > 1 || x.groups.length > 1) && (
+        <View style={styles.block}>
+          <Text style={type.caption}>Order</Text>
+          {x.years.length > 1 && <OrderList title="Years" items={x.years} onMove={async (id, d) => { const r = await x.moveYear(id, d); if (r) setError(r); }} />}
+          {x.year?.hasSubgroups && x.groups.length > 1 && <OrderList title={`Months in ${x.year.label}`} items={x.groups} onMove={async (id, d) => { const r = await x.moveMonth(id, d); if (r) setError(r); }} />}
+        </View>
+      )}
 
       {year && (
         <View style={styles.block}>

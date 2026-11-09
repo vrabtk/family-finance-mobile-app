@@ -71,6 +71,8 @@ function wireApi() {
   api.deleteExpense.mockImplementation(async (_w: string, id: string) => { world.expenses = world.expenses.filter((e) => e.id !== id); });
 
   api.createYear.mockImplementation(async (_w: string, label: string, hasSubgroups: boolean) => { const y = { id: nid('y'), label, hasSubgroups, status: 'active' }; world.years.push(y); return y; });
+  api.reorderYears.mockImplementation(async (_w: string, ids: string[]) => { world.years.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id)); });
+  api.reorderGroups.mockImplementation(async (_w: string, yearId: string, ids: string[]) => { world.groups.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id)); });
   api.updateYear.mockImplementation(async (_w: string, id: string, label: string) => Object.assign(world.years.find((y) => y.id === id), { label }));
   api.archiveYear.mockImplementation(async (_w: string, id: string) => Object.assign(world.years.find((y) => y.id === id), { status: 'archived' }));
   api.restoreYear.mockImplementation(async (_w: string, id: string) => Object.assign(world.years.find((y) => y.id === id), { status: 'active' }));
@@ -283,6 +285,22 @@ describe('periods', () => {
     type('Month', 'X');
     pressIn('Add');
     expect(await sheet().findByText('label required')).toBeTruthy();
+  });
+
+  test('years and months can be moved up and down; the new order is saved and shown', async () => {
+    await open();
+    manage();
+    fireEvent.press(screen.getByLabelText('Move Apr-2026 up'));
+    await waitFor(() => expect(api.reorderGroups).toHaveBeenCalledWith('w1', 'y1', ['g2', 'g1']));
+    fireEvent.press(await screen.findByLabelText('Move 2025 up'));
+    await waitFor(() => expect(api.reorderYears).toHaveBeenCalledWith('w1', ['y2', 'y1']));
+  });
+
+  test('viewers cannot reorder', async () => {
+    Object.assign(mockSession, { canWrite: false, isAdmin: false });
+    await open();
+    manage();
+    expect(screen.queryByLabelText('Move 2025 up')).toBeNull();
   });
 
   test('rename year and rename month', async () => {

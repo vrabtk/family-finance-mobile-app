@@ -6,7 +6,7 @@ import { useAsync } from '../hooks';
 import { errorMessage, useSession } from '../session';
 import type { Expense, ExpenseGroup, ExpenseYear, Person, SalaryEntry } from '../types';
 import {
-  ExpenseFilter, OTHER_INCOME, ParsedExpense, Scope, filterExpenses, inScope, isArchivedPeriod, isSpending, scopeFor, summarize, visibleGroups,
+  ExpenseFilter, OTHER_INCOME, ParsedExpense, Scope, filterExpenses, inScope, isArchivedPeriod, isSpending, moveId, scopeFor, summarize, visibleGroups,
 } from './logic';
 
 // `key` says which year/month the data belongs to, so a screen never shows another month's numbers.
@@ -83,6 +83,8 @@ export function useExpenses(focus?: { yearId: string; groupId: string | null }) 
     setGroupChoice(null);
   }, 'all');
 
+  const moveYear = (id: string, delta: -1 | 1) => run(() => api.reorderYears(wid, moveId(years.map((y) => y.id), id, delta)), 'all');
+  const moveMonth = (id: string, delta: -1 | 1) => run(() => api.reorderGroups(wid, needYear().id, moveId(groups.map((g) => g.id), id, delta)), 'all');
   const renameYear = (label: string) => run(() => api.updateYear(wid, needYear().id, label), 'all');
   const archiveYear = () => run(() => api.archiveYear(wid, needYear().id), 'all');
   const restoreYear = (id: string) => run(() => api.restoreYear(wid, id), 'all');
@@ -183,7 +185,7 @@ export function useExpenses(focus?: { yearId: string; groupId: string | null }) 
     error: base.error || scoped.error, actionError, clearActionError: () => setActionError(''),
     reload: () => { base.reload(); scoped.reload(); },
     // actions
-    addYear, renameYear, archiveYear, restoreYear, deleteYear,
+    addYear, moveYear, moveMonth, renameYear, archiveYear, restoreYear, deleteYear,
     addMonth, renameMonth, archiveMonth, restoreMonth, deleteMonth,
     addExpense, editExpense, archiveExpense, restoreExpense, deleteExpense, toggleStatus,
     addIncome, editIncome, removeIncome,
