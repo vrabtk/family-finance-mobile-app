@@ -22,6 +22,11 @@ type Panel =
 export function ExpensesScreen({ focus }: { focus?: Focus }) {
   const x = useExpenses(focus);
   const [panel, setPanel] = useState<Panel>(null);
+  // People and Other income can be folded away so the expense list is reachable without a long scroll.
+  const [folded, setFolded] = useState({ people: false, income: false });
+  const fold = (key: 'people' | 'income', title: string) => (
+    <IconButton icon={folded[key] ? 'chevron-down' : 'chevron-up'} label={`${folded[key] ? 'Show' : 'Hide'} ${title}`} onPress={() => setFolded((f) => ({ ...f, [key]: !f[key] }))} />
+  );
   const close = () => setPanel(null);
   const { summary: s } = x;
   const word = x.year?.hasSubgroups ? 'month' : 'year';
@@ -77,8 +82,8 @@ export function ExpensesScreen({ focus }: { focus?: Focus }) {
               </Card>
 
               {/* People */}
-              <SectionTitle>People</SectionTitle>
-              <Card style={{ padding: 0 }}>
+              <SectionTitle action={fold('people', 'people')}>People</SectionTitle>
+              {!folded.people && <Card style={{ padding: 0 }}>
                 {s.panelPersons.length === 0 && s.incomeOnly.length === 0 && <Text style={[type.small, styles.pad]}>No people in this {word} yet.</Text>}
                 {s.panelPersons.map((l, i) => (
                   <Pressable key={l.person.id} disabled={!x.canWrite} onPress={() => setPanel({ k: 'salary', person: l.person })} style={[styles.person, i > 0 && styles.divider]} accessibilityRole="button" accessibilityLabel={`${l.person.name} salary`}>
@@ -112,11 +117,11 @@ export function ExpensesScreen({ focus }: { focus?: Focus }) {
                   </View>
                 )}
                 {x.canWrite && <AddRow label="Add person" onPress={() => setPanel({ k: 'person' })} divider />}
-              </Card>
+              </Card>}
 
               {/* Other income */}
-              <SectionTitle>Other income</SectionTitle>
-              <Card style={{ padding: 0 }}>
+              <SectionTitle action={fold('income', 'other income')}>Other income</SectionTitle>
+              {!folded.income && <Card style={{ padding: 0 }}>
                 {x.otherIncome.length === 0 && <Text style={[type.small, styles.pad]}>No other income this {word}.</Text>}
                 {x.otherIncome.map((e, i) => (
                   <Pressable key={e.id} disabled={!x.canWrite} onPress={() => setPanel({ k: 'income', item: e })} style={[styles.incomeRow, i > 0 && styles.divider]} accessibilityRole="button" accessibilityLabel={`Income ${e.label}`}>
@@ -125,7 +130,7 @@ export function ExpensesScreen({ focus }: { focus?: Focus }) {
                   </Pressable>
                 ))}
                 {x.canWrite && <AddRow label="Add other income" onPress={() => setPanel({ k: 'income' })} divider />}
-              </Card>
+              </Card>}
 
               {/* Expenses */}
               <SectionTitle>Expenses</SectionTitle>

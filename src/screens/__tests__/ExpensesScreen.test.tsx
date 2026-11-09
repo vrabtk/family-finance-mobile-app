@@ -296,6 +296,18 @@ describe('periods', () => {
     await waitFor(() => expect(api.reorderYears).toHaveBeenCalledWith('w1', ['y2', 'y1']));
   });
 
+  test('People and Other income can be folded away and shown again', async () => {
+    await open();
+    expect(screen.getByText('Add person')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('Hide people'));
+    expect(screen.queryByText('Add person')).toBeNull();
+    expect(screen.getByLabelText('Show people')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('Hide other income'));
+    expect(screen.queryByText('Add other income')).toBeNull();
+    fireEvent.press(screen.getByLabelText('Show people'));
+    expect(screen.getByText('Add person')).toBeTruthy();
+  });
+
   test('viewers cannot reorder', async () => {
     Object.assign(mockSession, { canWrite: false, isAdmin: false });
     await open();
