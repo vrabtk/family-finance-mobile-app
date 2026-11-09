@@ -112,7 +112,13 @@ beforeEach(() => {
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 const as = (role: 'admin' | 'member' | 'viewer') => Object.assign(mockSession, { canWrite: role !== 'viewer', isAdmin: role === 'admin' });
-const open = async () => { render(<OptionsProvider><ExpensesScreen /></OptionsProvider>); await screen.findByText('Left after expenses'); };
+// `section` opens the People or Other income segment; the default segment is the bills list.
+const open = async (section?: 'people' | 'income') => {
+  render(<OptionsProvider><ExpensesScreen /></OptionsProvider>);
+  await screen.findByText('Left after expenses');
+  if (section === 'people') fireEvent.press(screen.getByText(/^People/));
+  if (section === 'income') fireEvent.press(screen.getByText('Other income'));
+};
 const sheet = () => within(screen.getAllByTestId('sheet').at(-1)!); // topmost open sheet
 const closed = () => waitFor(() => expect(screen.queryAllByTestId('sheet').length).toBe(0));
 const gone = (text: string) => waitFor(() => expect(screen.queryAllByText(text).length).toBe(0));
@@ -122,6 +128,9 @@ const pressIn = (text: string) => fireEvent.press(sheet().getByText(text));
 const type = (label: string, value: string) => fireEvent.changeText(sheet().getByLabelText(label), value);
 // Dropdowns: tap the field, then pick an option from the list that opens.
 const choose = (field: string, option: string) => { fireEvent.press(sheet().getByLabelText(field)); fireEvent.press(sheet().getByText(option)); };
+const showPeople = () => fireEvent.press(screen.getByText(/^People/));
+const showIncome = () => fireEvent.press(screen.getByText('Other income'));
+const showBills = () => fireEvent.press(screen.getByText('Bills'));
 const manage = () => fireEvent.press(screen.getByLabelText('Manage years and months'));
 
 // ── loading and summary ──────────────────────────────────────────────────────
@@ -131,17 +140,20 @@ describe('loading and summary', () => {
     expect(screen.getByText('2026 · Mar-2026')).toBeTruthy();
     expect(screen.getByText('₹60,050')).toBeTruthy();                            // 97,000 income − 36,950 spending
     expect(screen.getByText('1 of 3 items paid (33%)')).toBeTruthy();
+    for (const name of ['Rent', 'Groceries', 'Electricity']) expect(screen.getByText(name)).toBeTruthy();
+    expect(screen.queryByText('Old gym')).toBeNull();                            // archived is hidden
+    expect(screen.queryByText('April rent')).toBeNull();                         // other month
+    showPeople();
     expect(screen.getByText('Salary ₹50,000 · spent ₹25,000 · 1/1 paid')).toBeTruthy();
     expect(screen.getByText('Salary ₹30,000 · spent ₹9,800 · 0/1 paid')).toBeTruthy();
     expect(screen.getByText('Income only')).toBeTruthy();                        // Side has no panel
     expect(screen.getByText('1 expense not tied to a person')).toBeTruthy();
-    for (const name of ['Rent', 'Groceries', 'Electricity']) expect(screen.getByText(name)).toBeTruthy();
-    expect(screen.queryByText('Old gym')).toBeNull();                            // archived is hidden
-    expect(screen.queryByText('April rent')).toBeNull();                         // other month
   });
 
   test('other income is listed under Other income, not among expenses or items to pay', async () => {
     await open();
+    expect(screen.queryByText('Rent received')).toBeNull();                      // not among the bills
+    showIncome();
     expect(screen.getAllByText('Rent received')).toHaveLength(1);
     expect(screen.getByLabelText('Income Rent received')).toBeTruthy();
     expect(screen.queryByLabelText('Mark Rent received paid')).toBeNull();
@@ -226,6 +238,7 @@ describe('periods', () => {
     press('2025');
     await screen.findByText('Flat bill');
     expect(screen.queryByText('Add month')).toBeNull();
+    showPeople();
     expect(screen.getByText('Salary ₹20,000 · spent ₹0 · 0/0 paid')).toBeTruthy();
     expect(api.getExpenses).toHaveBeenLastCalledWith('w1', 'y2', null, false);
   });
@@ -296,16 +309,27 @@ describe('periods', () => {
     await waitFor(() => expect(api.reorderYears).toHaveBeenCalledWith('w1', ['y2', 'y1']));
   });
 
-  test('People and Other income can be folded away and shown again', async () => {
+  test('Bills, People and Other income are separate views with their own add buttons', async () => {
     await open();
-    expect(screen.getByText('Add person')).toBeTruthy();
-    fireEvent.press(screen.getByLabelText('Hide people'));
     expect(screen.queryByText('Add person')).toBeNull();
-    expect(screen.getByLabelText('Show people')).toBeTruthy();
-    fireEvent.press(screen.getByLabelText('Hide other income'));
     expect(screen.queryByText('Add other income')).toBeNull();
-    fireEvent.press(screen.getByLabelText('Show people'));
+    showPeople();
     expect(screen.getByText('Add person')).toBeTruthy();
+    expect(screen.queryByText('Rent')).toBeNull();
+    showIncome();
+    expect(screen.getByText('Add other income')).toBeTruthy();
+    showBills();
+    expect(screen.getByText('Rent')).toBeTruthy();
+  });
+
+  test('the bills list is split into To pay and Paid with counts and totals; a status filter shows one flat list', async () => {
+    await open();
+    expect(screen.getByText('To pay · 2')).toBeTruthy();   // Groceries and Electricity
+    expect(screen.getByText('Paid · 1')).toBeTruthy();     // Rent
+    fireEvent.press(screen.getAllByText('Pending')[0]);    // the filter chip comes before the badges
+    expect(screen.queryByText('To pay · 2')).toBeNull();
+    expect(screen.getByText('Groceries')).toBeTruthy();
+    expect(screen.queryByText('Rent')).toBeNull();
   });
 
   test('viewers cannot reorder', async () => {
@@ -567,6 +591,7 @@ describe('expenses', () => {
     pressIn('Save');
     await closed();
     expect(api.updateExpense).toHaveBeenCalledWith('w1', 'e2', { label: 'Groceries', amount: 10250, category: 'food', personId: 'p2', status: 'pending', notes: null });
+    showPeople();
     expect(screen.getByText('Salary ₹30,000 · spent ₹10,250 · 0/1 paid')).toBeTruthy();
   });
 
@@ -632,11 +657,13 @@ describe('expenses', () => {
     as('viewer');
     await open();
     expect(screen.queryByLabelText('Add expense')).toBeNull();
-    expect(screen.queryByText('Add person')).toBeNull();
-    expect(screen.queryByText('Add other income')).toBeNull();
     fireEvent.press(screen.getByLabelText('Mark Groceries paid'));
     fireEvent.press(screen.getByText('Groceries'));
+    showPeople();
+    expect(screen.queryByText('Add person')).toBeNull();
     fireEvent.press(screen.getByLabelText('Hari salary'));
+    showIncome();
+    expect(screen.queryByText('Add other income')).toBeNull();
     expect(screen.queryByTestId('sheet')).toBeNull();
     expect(api.updateExpense).not.toHaveBeenCalled();
   });
@@ -705,7 +732,7 @@ describe('search and filters', () => {
 // ── other income ─────────────────────────────────────────────────────────────
 describe('other income', () => {
   test('add: defaults the name, marks the expense as income and counts it in the balance', async () => {
-    await open();
+    await open('income');
     press('Add other income');
     expect(sheet().getByLabelText('Name').props.value).toBe('Income source 2'); // one source already exists
     type('Name', 'Bonus');
@@ -721,7 +748,7 @@ describe('other income', () => {
   });
 
   test('edit changes name and amount only', async () => {
-    await open();
+    await open('income');
     fireEvent.press(screen.getByLabelText('Income Rent received'));
     type('Amount (₹)', '15000');
     pressIn('Save');
@@ -731,7 +758,7 @@ describe('other income', () => {
   });
 
   test('remove archives it', async () => {
-    await open();
+    await open('income');
     fireEvent.press(screen.getByLabelText('Income Rent received'));
     pressIn('Remove');
     await closed();
@@ -741,7 +768,7 @@ describe('other income', () => {
   });
 
   test('validation: name and amount', async () => {
-    await open();
+    await open('income');
     press('Add other income');
     type('Name', '   ');
     pressIn('Save');
@@ -757,7 +784,7 @@ describe('other income', () => {
 // ── people and salaries ──────────────────────────────────────────────────────
 describe('people and salaries', () => {
   test('add a person with a panel: person and salary are created for this month', async () => {
-    await open();
+    await open('people');
     press('Add person');
     type('Name', 'Asha');
     type('Salary (₹)', '42000');
@@ -769,7 +796,7 @@ describe('people and salaries', () => {
   });
 
   test('add an income-only person', async () => {
-    await open();
+    await open('people');
     press('Add person');
     type('Name', 'Tenant');
     type('Salary (₹)', '9000');
@@ -781,7 +808,7 @@ describe('people and salaries', () => {
   });
 
   test('colour can be chosen', async () => {
-    await open();
+    await open('people');
     press('Add person');
     type('Name', 'Asha');
     fireEvent.press(sheet().getByLabelText('Colour #7C3AED'));
@@ -791,7 +818,7 @@ describe('people and salaries', () => {
   });
 
   test('validation: name and salary', async () => {
-    await open();
+    await open('people');
     press('Add person');
     pressIn('Add person');
     expect(await sheet().findByText('Name is required.')).toBeTruthy();
@@ -804,7 +831,7 @@ describe('people and salaries', () => {
 
   test('if saving the salary fails the error is shown', async () => {
     api.saveSalary.mockRejectedValueOnce(new Error('Year, month or person not found'));
-    await open();
+    await open('people');
     press('Add person');
     type('Name', 'Asha');
     pressIn('Add person');
@@ -812,7 +839,7 @@ describe('people and salaries', () => {
   });
 
   test('edit a salary for this month only', async () => {
-    await open();
+    await open('people');
     fireEvent.press(screen.getByLabelText('Hari salary'));
     await waitFor(() => expect(sheet().getByLabelText('Salary for this month (₹)').props.value).toBe('50000'));
     type('Salary for this month (₹)', '55000');
@@ -821,12 +848,11 @@ describe('people and salaries', () => {
     expect(api.saveSalary).toHaveBeenCalledWith('w1', { personId: 'p1', yearId: 'y1', groupId: 'g1', amount: 55000 });
     await screen.findByText('Salary ₹55,000 · spent ₹25,000 · 1/1 paid');
     press('Apr-2026');
-    await screen.findByText('April rent');
-    expect(screen.getByText('Salary ₹40,000 · spent ₹24,000 · 0/1 paid')).toBeTruthy(); // April untouched
+    await waitFor(() => expect(screen.getByText('Salary ₹40,000 · spent ₹24,000 · 0/1 paid')).toBeTruthy()); // April untouched
   });
 
   test('income-only people can have their salary edited too', async () => {
-    await open();
+    await open('people');
     fireEvent.press(screen.getByLabelText('Side salary'));
     type('Salary for this month (₹)', '6000');
     pressIn('Save');
@@ -835,7 +861,7 @@ describe('people and salaries', () => {
   });
 
   test('remove a person from this month: confirm, then only this month changes', async () => {
-    await open();
+    await open('people');
     fireEvent.press(screen.getByLabelText('Hema salary'));
     pressIn('Remove from month');
     expect(sheet().getByText('Remove Hema?')).toBeTruthy();
@@ -844,15 +870,16 @@ describe('people and salaries', () => {
     await closed();
     expect(api.removeSalary).toHaveBeenCalledWith('w1', { personId: 'p2', yearId: 'y1', groupId: 'g1' });
     await goneLabel('Hema salary');
+    showBills();
     expect(screen.getByText('Groceries')).toBeTruthy(); // their expenses remain, now unassigned
     expect(world.persons.some((p) => p.id === 'p2')).toBe(true); // the person still exists in the workspace
   });
 
   test('in a flat year the wording and scope use "year"', async () => {
-    await open();
+    await open('people');
     press('2025');
-    await screen.findByText('Flat bill');
-    fireEvent.press(screen.getByLabelText('Hari salary'));
+    await waitFor(() => expect(api.getExpenses).toHaveBeenLastCalledWith('w1', 'y2', null, false));
+    fireEvent.press(await screen.findByLabelText('Hari salary'));
     expect(sheet().getByText('Remove from year')).toBeTruthy();
     pressIn('Remove from year');
     pressIn('Remove');
@@ -861,10 +888,10 @@ describe('people and salaries', () => {
   });
 
   test('a person with no salary entry in the month is not listed', async () => {
-    await open();
+    await open('people');
     press('Apr-2026');
-    await screen.findByText('April rent');
-    expect(screen.queryByLabelText('Hema salary')).toBeNull();
+    await waitFor(() => expect(api.getExpenses).toHaveBeenLastCalledWith('w1', 'y1', 'g2', false));
+    await waitFor(() => expect(screen.queryByLabelText('Hema salary')).toBeNull());
     expect(screen.getByLabelText('Hari salary')).toBeTruthy();
   });
 });
