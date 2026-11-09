@@ -18,6 +18,7 @@ type SessionContext = {
   signUp: (name: string, email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   switchWorkspace: (id: string) => Promise<void>;
+  patchSession: (change: Partial<MobileSession>) => Promise<void>; // e.g. new name or tokens after a profile change
 };
 
 const Ctx = createContext<SessionContext | null>(null);
@@ -104,11 +105,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (ref.current) await commit({ ...ref.current, activeWorkspaceId: id });
   }, [commit]);
 
+  const patchSession = useCallback(async (change: Partial<MobileSession>) => {
+    if (ref.current) await commit({ ...ref.current, ...change });
+  }, [commit]);
+
   const value = useMemo<SessionContext>(() => {
     const workspace = session?.workspaces.find((x) => x.id === session.activeWorkspaceId) ?? null;
     const role: Role = workspace?.role ?? 'viewer';
-    return { status, session, workspace, role, canWrite: role !== 'viewer', isAdmin: role === 'admin', signIn, signUp, signOut, switchWorkspace };
-  }, [status, session, signIn, signUp, signOut, switchWorkspace]);
+    return { status, session, workspace, role, canWrite: role !== 'viewer', isAdmin: role === 'admin', signIn, signUp, signOut, switchWorkspace, patchSession };
+  }, [status, session, signIn, signUp, signOut, switchWorkspace, patchSession]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

@@ -1,7 +1,7 @@
 import type { IconName } from './ui';
 
 export type TabKey = 'home' | 'expenses' | 'loans' | 'banks' | 'more';
-export type MoreKey = 'investments' | 'insurance' | 'overview' | 'settings';
+export type MoreKey = 'investments' | 'insurance' | 'overview' | 'settings' | 'profile';
 
 export const TABS: Array<{ key: TabKey; label: string; icon: IconName }> = [
   { key: 'home', label: 'Home', icon: 'home' },

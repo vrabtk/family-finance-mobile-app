@@ -1,5 +1,5 @@
 import { API_BASE_URL } from './config';
-import type { Analytics, AnalyticsPeriod, Bank, Expense, ExpenseGroup, ExpenseYear, MobileSession, Person, SalaryEntry, Workspace } from './types';
+import type { Analytics, AnalyticsPeriod, Bank, Expense, ExpenseGroup, ExpenseYear, MobileSession, Person, SalaryEntry, Workspace, Member, Role } from './types';
 
 export class ApiError extends Error {
   status: number;
@@ -91,6 +91,13 @@ const w = (workspaceId: string) => `/workspaces/${workspaceId}`;
 // ── Auth (unauthenticated calls) ─────────────────────────────────────────────
 export const login = (email: string, password: string) => send<any>('POST', '/auth/login', { email, password });
 export const signup = (name: string, email: string, password: string) => send<any>('POST', '/auth/signup', { name, email, password });
+export const forgotPassword = (email: string) => send<{ message: string }>('POST', '/auth/forgot-password', { email });
+export const resetPassword = (email: string, code: string, newPassword: string) =>
+  send<{ message: string }>('POST', '/auth/reset-password', { email, code, newPassword });
+export const updateProfile = (change: { name?: string; phone?: string | null }) =>
+  put<{ user: MobileSession['user'] }>('/auth/profile', change);
+export const changePassword = (currentPassword: string, newPassword: string) =>
+  post<{ message: string; accessToken: string; refreshToken: string }>('/auth/change-password', { currentPassword, newPassword });
 export const logoutRemote = (refreshToken: string) => post('/auth/logout', { refreshToken });
 // Permanently deletes the signed-in account (password is re-checked on the server).
 export const deleteAccount = (password: string) =>
@@ -99,6 +106,10 @@ export const deleteAccount = (password: string) =>
 // ── Workspaces ───────────────────────────────────────────────────────────────
 export const getWorkspaces = () => get<Workspace[]>('/workspaces');
 export const inviteMember = (workspaceId: string, email: string, role: string) => post(`${w(workspaceId)}/invite`, { email, role });
+export const listMembers = (workspaceId: string) => get<Member[]>(`${w(workspaceId)}/members`);
+export const updateMember = (workspaceId: string, userId: string, change: { role?: Role; blocked?: boolean }) =>
+  put<{ userId: string; role: Role; blocked: boolean }>(`${w(workspaceId)}/members/${userId}`, change);
+export const removeMember = (workspaceId: string, userId: string) => del(`${w(workspaceId)}/members/${userId}`);
 
 // ── Analytics ────────────────────────────────────────────────────────────────
 export const getAnalyticsAllTime = (workspaceId: string) => get<Analytics>(`${w(workspaceId)}/analytics/all-time`);

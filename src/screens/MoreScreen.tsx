@@ -6,8 +6,10 @@ import { errorMessage, useSession } from '../session';
 import { colors, radius, space, type } from '../theme';
 import { Badge, Button, Card, Chips, ErrorBanner, Field, IconName, Screen, SectionTitle, Sheet } from '../ui';
 import type { MoreKey } from '../navigation';
+import { MembersCard } from './Members';
 
 const LINKS: Array<{ key: MoreKey; label: string; hint: string; icon: IconName }> = [
+  { key: 'profile', label: 'My profile', hint: 'Name, mobile number, password', icon: 'user' },
   { key: 'investments', label: 'Investments', hint: 'Gold, deposits, stocks, funds', icon: 'trending-up' },
   { key: 'insurance', label: 'Insurance', hint: 'Policies, premiums, due dates', icon: 'shield' },
   { key: 'overview', label: 'Monthly overview', hint: 'Income, bills and savings', icon: 'layers' },
@@ -125,6 +127,9 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
           );
         })}
       </Card>
+
+      <SectionTitle>Members</SectionTitle>
+      {workspace && <MembersCard workspaceId={workspace.id} myId={session?.user.id} isAdmin={isAdmin} />}
 
       <SectionTitle>Invite a member</SectionTitle>
       {isAdmin ? (

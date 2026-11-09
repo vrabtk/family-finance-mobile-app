@@ -1,5 +1,9 @@
 export type Role = 'viewer' | 'member' | 'admin';
 
+export type Member = {
+  userId: string; name: string; email: string; role: Role; blocked: boolean; joinedAt: string; isOwner: boolean;
+};
+
 export type Workspace = {
   id: string;
   name: string;
@@ -13,6 +17,7 @@ export type MobileSession = {
     id: string;
     email: string;
     name: string;
+    phone?: string | null;
   };
   accessToken: string;
   refreshToken: string;

@@ -10,6 +10,7 @@ import { ExpensesScreen } from './src/screens/ExpensesScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { MoreScreen, SettingsScreen } from './src/screens/MoreScreen';
 import { InsuranceScreen, InvestmentsScreen, LoansScreen, OverviewScreen } from './src/screens/resources';
+import { ProfileScreen } from './src/screens/ProfileScreen';
 import { SessionProvider, useSession } from './src/session';
 import { colors, shadow, space } from './src/theme';
 
@@ -60,6 +61,7 @@ function Main() {
     content = more === 'investments' ? <InvestmentsScreen onBack={back} />
       : more === 'insurance' ? <InsuranceScreen onBack={back} />
       : more === 'overview' ? <OverviewScreen onBack={back} />
+      : more === 'profile' ? <ProfileScreen onBack={back} />
       : <SettingsScreen onBack={back} />;
   } else {
     content = tab === 'home' ? <HomeScreen go={go} />
