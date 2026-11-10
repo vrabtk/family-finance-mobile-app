@@ -11,6 +11,7 @@ const matchType = (item: any, value: string) => item.type === value;
 // ── Loans ────────────────────────────────────────────────────────────────────
 const loans: ResourceConfig = {
   title: 'Loans',
+  tour: 'loans',
   noun: 'loan',
   icon: 'percent',
   emptyHint: 'Track home loans, credit cards, personal loans and money you have lent.',
@@ -46,6 +47,7 @@ const loans: ResourceConfig = {
 // ── Investments ──────────────────────────────────────────────────────────────
 const investments: ResourceConfig = {
   title: 'Investments',
+  tour: 'investments',
   noun: 'investment',
   icon: 'trending-up',
   emptyHint: 'Add gold, deposits, stocks and mutual funds to see your growth.',
@@ -97,6 +99,7 @@ const PER_YEAR: Record<string, number> = { monthly: 12, quarterly: 4, 'half-year
 
 const insurance: ResourceConfig = {
   title: 'Insurance',
+  tour: 'insurance',
   noun: 'policy',
   icon: 'shield',
   emptyHint: 'Add your policies to see yearly premiums and upcoming due dates.',
@@ -155,6 +158,7 @@ const OV_GROUP: Record<string, string> = { income: 'Income sources', mandatory: 
 
 const overview: ResourceConfig = {
   title: 'Overview',
+  tour: 'overview',
   noun: 'item',
   icon: 'layers',
   emptyHint: 'List your regular income, bills and savings to see your monthly cash flow.',

@@ -6,11 +6,13 @@ import { errorMessage, useSession } from '../session';
 import { colors, radius, space, type } from '../theme';
 import { Badge, Button, Card, Chips, ErrorBanner, Field, IconName, Screen, SectionTitle, Sheet } from '../ui';
 import { PINNABLE, PinKey } from '../navigation';
+import { TourTarget } from '../tour/context';
 import { MembersCard } from './Members';
 
-type MoreLink = { key: PinKey | 'profile' | 'tabs' | 'data'; label: string; hint: string; icon: IconName };
+type MoreLink = { key: PinKey | 'profile' | 'tabs' | 'data' | 'tours'; label: string; hint: string; icon: IconName };
 const FIXED_LINKS: MoreLink[] = [
   { key: 'profile', label: 'My profile', hint: 'Name, mobile number, password', icon: 'user' },
+  { key: 'tours', label: 'App tour', hint: 'Learn the app: the full tour or one screen', icon: 'map' },
   { key: 'data', label: 'Export and import', hint: 'Back up or restore your data', icon: 'download' },
   { key: 'tabs', label: 'Customize bottom bar', hint: 'Choose the three shortcuts next to Home', icon: 'sliders' },
 ];
@@ -110,7 +112,7 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <Screen title="Workspace" subtitle="Switch workspace and manage members" onBack={onBack}>
+    <Screen tour="settings" title="Workspace" subtitle="Switch workspace and manage members" onBack={onBack}>
       <SectionTitle>Your workspaces</SectionTitle>
       <Card style={{ padding: 0 }}>
         {session?.workspaces.map((w, i) => {
@@ -129,7 +131,7 @@ export function SettingsScreen({ onBack }: { onBack: () => void }) {
       </Card>
 
       <SectionTitle>Members</SectionTitle>
-      {workspace && <MembersCard workspaceId={workspace.id} myId={session?.user.id} isAdmin={isAdmin} />}
+      {workspace && <TourTarget id="ws.members"><MembersCard workspaceId={workspace.id} myId={session?.user.id} isAdmin={isAdmin} /></TourTarget>}
 
       <SectionTitle>Invite a member</SectionTitle>
       {isAdmin ? (

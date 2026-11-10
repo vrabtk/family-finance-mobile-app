@@ -6,6 +6,7 @@ import { useAsync } from '../hooks';
 import { OptionSelect, capitalize, useOptions } from '../options';
 import { errorMessage, useSession } from '../session';
 import { space, type } from '../theme';
+import type { TourId } from '../tour/steps';
 import type { OptionKind } from '../types';
 import {
   Badge, Button, Card, Chips, ConfirmSheet, Empty, ErrorBanner, Fab, Field, IconName, Loading, Screen, SectionTitle, Sheet, Stat, Tone,
@@ -34,6 +35,7 @@ export type SummaryTile = { label: string; value: string; tone: Tone; icon: Icon
 
 export type ResourceConfig = {
   title: string;
+  tour: TourId; // this screen's guide
   noun: string; // "loan" -> "Add loan", "Delete loan"
   icon: IconName;
   emptyHint: string;
@@ -149,6 +151,7 @@ export function ResourceScreen({ config, onBack }: { config: ResourceConfig; onB
 
   return (
     <Screen
+      tour={config.tour}
       title={config.title}
       onBack={onBack}
       refreshing={refreshing}

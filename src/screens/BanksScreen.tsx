@@ -75,6 +75,7 @@ export function BanksScreen() {
 
   return (
     <Screen
+      tour="banks"
       title="Banks"
       subtitle={banks.length ? `${banks.length} ${banks.length === 1 ? 'bank' : 'banks'}` : undefined}
       refreshing={refreshing}

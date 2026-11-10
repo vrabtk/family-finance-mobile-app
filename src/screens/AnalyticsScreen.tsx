@@ -6,6 +6,7 @@ import { inr, inrCompact } from '../format';
 import { shortLabel } from '../home/logic';
 import { useAsync } from '../hooks';
 import { useSession } from '../session';
+import { TourTarget } from '../tour/context';
 import { colors, radius, space, type } from '../theme';
 import { Card, Chips, Empty, ErrorBanner, Loading, ProgressBar, Screen, SectionTitle, Stat } from '../ui';
 
@@ -27,13 +28,13 @@ export function AnalyticsScreen({ onBack }: { onBack?: () => void }) {
   const all = data?.all;
 
   return (
-    <Screen title="Analytics" subtitle="Income, spending and savings over time" onBack={onBack} refreshing={refreshing} onRefresh={reload}>
+    <Screen tour="analytics" title="Analytics" subtitle="Income, spending and savings over time" onBack={onBack} refreshing={refreshing} onRefresh={reload}>
       <ErrorBanner message={error} onRetry={reload} />
       {loading ? <Loading /> : !data ? null : data.monthly.length === 0 ? (
         <Empty icon="bar-chart-2" title="Nothing to analyse yet" hint="Add a year and some expenses, and the charts appear here." />
       ) : (
         <>
-          <Chips options={RANGES} value={range} onChange={setRange} />
+          <TourTarget id="an.range"><Chips options={RANGES} value={range} onChange={setRange} /></TourTarget>
 
           <View style={styles.tiles}>
             <Stat label="Income" value={inrCompact(t.income)} tone="positive" icon="arrow-down-left" />

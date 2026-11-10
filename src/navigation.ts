@@ -1,7 +1,7 @@
 import type { IconName } from './ui';
 
 export type TabKey = 'home' | 'expenses' | 'loans' | 'banks' | 'more';
-export type MoreKey = 'investments' | 'insurance' | 'overview' | 'settings' | 'profile' | 'tabs' | 'data' | 'analytics';
+export type MoreKey = 'investments' | 'insurance' | 'overview' | 'settings' | 'profile' | 'tabs' | 'data' | 'analytics' | 'tours';
 
 // Every screen except Home and More can be pinned to the bottom bar; the rest are listed under More.
 export type PinKey = 'expenses' | 'loans' | 'banks' | 'investments' | 'insurance' | 'overview' | 'settings' | 'analytics';

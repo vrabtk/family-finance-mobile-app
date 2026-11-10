@@ -65,7 +65,7 @@ export function ProfileScreen({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <Screen title="My profile" subtitle={user?.email} onBack={onBack}>
+    <Screen tour="profile" title="My profile" subtitle={user?.email} onBack={onBack}>
       <SectionTitle>Details</SectionTitle>
       <Card>
         <Field label="Name" value={name} onChangeText={setName} autoCapitalize="words" />

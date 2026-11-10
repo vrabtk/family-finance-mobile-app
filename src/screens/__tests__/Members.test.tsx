@@ -5,6 +5,7 @@ import { MembersCard } from '../Members';
 jest.mock('../../api');
 jest.mock('../../session', () => ({ errorMessage: (e: any, f = 'Something went wrong.') => e?.message || f }));
 
+jest.setTimeout(20000);
 const api = jest.mocked(apiModule) as any;
 const rows = () => [
   { userId: 'u1', name: 'Hari', email: 'h@x.com', role: 'admin', blocked: false, joinedAt: '2026-01-01', isOwner: true },

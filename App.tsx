@@ -5,6 +5,9 @@ import { ActivityIndicator, BackHandler, Pressable, StyleSheet, Text, View } fro
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BarItem, DEFAULT_PINS, Focus, Go, MoreKey, PinKey, TabKey, activeBarKey, barItems, cleanPins, pinInfo } from './src/navigation';
 import { TabsScreen } from './src/screens/TabsScreen';
+import { TourScreen } from './src/screens/TourScreen';
+import { TourTarget } from './src/tour/context';
+import { TourProvider } from './src/tour/TourProvider';
 import { loadPrefs, savePrefs } from './src/storage';
 import { AuthScreen, ConfigScreen } from './src/screens/AuthScreen';
 import { DataScreen } from './src/screens/DataScreen';
@@ -44,6 +47,7 @@ function Root() {
 }
 
 function Main() {
+  const { role } = useSession();
   const [tab, setTab] = useState<TabKey>('home');
   const [pins, setPinsState] = useState<PinKey[]>(DEFAULT_PINS);
   useEffect(() => { loadPrefs().then((p) => setPinsState(cleanPins(p.pins))); }, []);
@@ -64,7 +68,7 @@ function Main() {
   // One way to navigate: pick a tab, optionally a More sub-screen, optionally a month for Expenses.
   const go: Go = (next, options) => { setMore(options?.more ?? null); setFocus(options?.focus); setTab(next); };
   const goRoute = (r: { tab: TabKey; more?: MoreKey }) => go(r.tab, { more: r.more });
-  const openFromMore = (dest: PinKey | 'profile' | 'tabs' | 'data') => (dest === 'profile' || dest === 'tabs' || dest === 'data' ? go('more', { more: dest }) : goRoute(pinInfo(dest).route));
+  const openFromMore = (dest: PinKey | 'profile' | 'tabs' | 'data' | 'tours') => (dest === 'profile' || dest === 'tabs' || dest === 'data' || dest === 'tours' ? go('more', { more: dest }) : goRoute(pinInfo(dest).route));
   const back = () => setMore(null);
 
   let content;
@@ -75,6 +79,7 @@ function Main() {
       : more === 'profile' ? <ProfileScreen onBack={back} />
       : more === 'analytics' ? <AnalyticsScreen onBack={back} />
       : more === 'data' ? <DataScreen onBack={back} />
+      : more === 'tours' ? <TourScreen onBack={back} />
       : more === 'tabs' ? <TabsScreen pins={pins} onChange={setPins} onBack={back} />
       : <SettingsScreen onBack={back} />;
   } else {
@@ -91,10 +96,12 @@ function Main() {
   const typing = keyboard > 0;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg, paddingBottom: keyboard }}>
-      <View style={{ flex: 1 }}>{content}</View>
-      {!typing && <TabBar items={barItems(pins)} active={activeBarKey(pins, { tab, more: more ?? undefined })} onChange={goRoute} />}
-    </View>
+    <TourProvider navigate={goRoute} access={role}>
+      <View style={{ flex: 1, backgroundColor: colors.bg, paddingBottom: keyboard }}>
+        <View style={{ flex: 1 }}>{content}</View>
+        {!typing && <TourTarget id="bar"><TabBar items={barItems(pins)} active={activeBarKey(pins, { tab, more: more ?? undefined })} onChange={goRoute} /></TourTarget>}
+      </View>
+    </TourProvider>
   );
 }
 

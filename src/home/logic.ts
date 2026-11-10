@@ -20,6 +20,15 @@ const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', '
 
 // Labels are free text ("Mar-2026", "March", "2026"). Prefer the period named after today's month and year,
 // then the latest period that has any activity, then simply the latest one.
+// True when the period is named after the calendar month we are in (so "days gone this month" makes sense for it).
+export function isCalendarMonth(period: AnalyticsPeriod | null, now: Date = new Date()): boolean {
+  if (!period) return false;
+  const text = (t: string) => t.toLowerCase();
+  const month = MONTHS[now.getMonth()];
+  const year = String(now.getFullYear());
+  return text(period.label).includes(month) && (text(period.label).includes(year) || text(period.yearLabel).includes(year));
+}
+
 export function pickCurrentPeriod(periods: AnalyticsPeriod[], now: Date = new Date()): AnalyticsPeriod | null {
   if (periods.length === 0) return null;
   const month = MONTHS[now.getMonth()];

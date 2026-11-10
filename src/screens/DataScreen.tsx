@@ -50,7 +50,7 @@ export function DataScreen({ onBack }: { onBack: () => void }) {
 
   const rows = picked ? summarize(picked.file) : [];
   return (
-    <Screen title="Export and import" subtitle={workspace?.name} onBack={onBack}>
+    <Screen tour="data" title="Export and import" subtitle={workspace?.name} onBack={onBack}>
       <ErrorBanner message={error} />
       {!!done && <Card><Text style={[type.body, { color: colors.positive }]}>{done}</Text></Card>}
 

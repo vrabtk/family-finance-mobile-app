@@ -9,7 +9,7 @@ export function TabsScreen({ pins, onChange, onBack }: { pins: PinKey[]; onChang
   const others = PINNABLE.filter((p) => !pins.includes(p.key));
   const full = pins.length >= PIN_SLOTS;
   return (
-    <Screen title="Bottom bar" subtitle="Home and More are always there" onBack={onBack}>
+    <Screen tour="tabs" title="Bottom bar" subtitle="Home and More are always there" onBack={onBack}>
       <SectionTitle>{`On the bar (${pins.length} of ${PIN_SLOTS})`}</SectionTitle>
       <Card style={{ padding: 0 }}>
         {pins.length === 0 && <Text style={[type.small, { padding: space.lg }]}>Nothing pinned. Pin up to three screens below.</Text>}

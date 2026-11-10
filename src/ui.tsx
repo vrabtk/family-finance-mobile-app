@@ -7,6 +7,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius, shadow, space, type } from './theme';
 import { useKeyboardHeight } from './hooks';
+import { useTour, useTourRef } from './tour/context';
+import type { TourId } from './tour/steps';
 
 export type IconName = keyof typeof Feather.glyphMap;
 export type Tone = 'neutral' | 'positive' | 'negative' | 'warning' | 'info' | 'primary';
@@ -30,11 +32,14 @@ type ScreenProps = {
   refreshing?: boolean;
   onRefresh?: () => void;
   fab?: ReactNode; // floating action, rendered above the scroll area
+  tour?: TourId; // this screen's guide: shows a help button in the header
   children: ReactNode;
 };
 
 // Page shell: header + scrollable body with pull-to-refresh. Bottom padding clears the tab bar.
-export function Screen({ title, subtitle, onBack, right, refreshing, onRefresh, fab, children }: ScreenProps) {
+export function Screen({ title, subtitle, onBack, right, refreshing, onRefresh, fab, tour, children }: ScreenProps) {
+  const guide = useTour();
+  const helpRef = useTourRef('help');
   return (
     <SafeAreaView edges={['top']} style={styles.screen}>
       <View style={styles.header}>
@@ -47,6 +52,11 @@ export function Screen({ title, subtitle, onBack, right, refreshing, onRefresh, 
           <Text style={type.title} numberOfLines={1}>{title}</Text>
           {!!subtitle && <Text style={type.small} numberOfLines={1}>{subtitle}</Text>}
         </View>
+        {tour && guide && (
+          <View ref={helpRef} collapsable={false}>
+            <IconButton icon="help-circle" label="Show the guide for this screen" onPress={() => guide.start(tour)} />
+          </View>
+        )}
         {right}
       </View>
       <ScrollView
@@ -316,8 +326,9 @@ export function ConfirmSheet({ visible, title, message, confirmLabel = 'Remove',
 }
 
 export function Fab({ onPress, label }: { onPress: () => void; label: string }) {
+  const ref = useTourRef('fab');
   return (
-    <Pressable onPress={onPress} accessibilityLabel={label} style={({ pressed }) => [styles.fab, pressed && { opacity: 0.85 }]}>
+    <Pressable ref={ref} onPress={onPress} accessibilityLabel={label} style={({ pressed }) => [styles.fab, pressed && { opacity: 0.85 }]}>
       <Feather name="plus" size={26} color={colors.onPrimary} />
     </Pressable>
   );

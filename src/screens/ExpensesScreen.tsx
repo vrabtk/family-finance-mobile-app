@@ -8,6 +8,7 @@ import { inr, inrCompact } from '../format';
 import type { Focus } from '../navigation';
 import { capitalize } from '../options';
 import { colors, radius, space, type } from '../theme';
+import { TourTarget } from '../tour/context';
 import type { Expense, Person } from '../types';
 import { Badge, Card, Chips, Empty, ErrorBanner, Fab, IconButton, Loading, ProgressBar, Screen } from '../ui';
 import { ExpenseSheet, IncomeSheet, ManageSheet, PeriodMode, PeriodSheet, PersonSheet, SalarySheet } from './expenses/sheets';
@@ -66,6 +67,7 @@ export function ExpensesScreen({ focus }: { focus?: Focus }) {
 
   return (
     <Screen
+      tour="expenses"
       title="Expenses"
       subtitle={x.year ? `${x.year.label}${x.group ? ` · ${x.group.label}` : ''}` : undefined}
       refreshing={x.refreshing}
@@ -79,6 +81,7 @@ export function ExpensesScreen({ focus }: { focus?: Focus }) {
       {x.loading ? <Loading /> : (
         <>
           {/* Period: one compact block; adding a year or month is a chip at the end of its row */}
+          <TourTarget id="exp.periods">
           {(x.years.length > 0 || x.canWrite) && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
               {x.years.map((y) => <PeriodChip key={y.id} label={periodLabel(y)} on={y.id === x.year?.id} onPress={() => x.selectYear(y.id)} />)}
@@ -91,6 +94,7 @@ export function ExpensesScreen({ focus }: { focus?: Focus }) {
               {x.canWrite && <AddChip label="Add month" onPress={() => setPanel({ k: 'period', mode: 'month' })} />}
             </ScrollView>
           )}
+          </TourTarget>
 
           {!x.year ? (
             <Empty icon="calendar" title="No year yet" hint={x.canWrite ? 'Add a year to start tracking expenses.' : 'Ask a workspace member to add a year.'} />
@@ -99,7 +103,7 @@ export function ExpensesScreen({ focus }: { focus?: Focus }) {
           ) : x.scopeLoading ? <Loading /> : (
             <>
               {/* Summary */}
-              <Card>
+              <TourTarget id="exp.summary"><Card>
                 <Text style={type.caption}>{s.balance >= 0 ? 'Left after expenses' : 'Over budget'}</Text>
                 <Text style={[styles.balance, { color: s.balance >= 0 ? colors.positive : colors.negative }]} numberOfLines={1} adjustsFontSizeToFit>{inr(Math.abs(s.balance))}</Text>
                 <View style={styles.split}>
@@ -109,14 +113,14 @@ export function ExpensesScreen({ focus }: { focus?: Focus }) {
                 </View>
                 <ProgressBar value={s.paidPct / 100} tone="positive" />
                 <Text style={[type.small, { marginTop: 6 }]}>{s.items ? `${s.paidItems} of ${s.items} items paid (${s.paidPct}%)` : 'Nothing to pay yet'}</Text>
-              </Card>
+              </Card></TourTarget>
 
               {/* One section at a time instead of one long page */}
-              <Chips
+              <TourTarget id="exp.views"><Chips
                 options={[{ value: 'bills', label: 'Bills' }, { value: 'people', label: `People${peopleCount ? ` (${peopleCount})` : ''}` }, { value: 'income', label: 'Other income' }]}
                 value={view}
                 onChange={setView}
-              />
+              /></TourTarget>
 
               {view === 'people' && (
                 <Card style={{ padding: 0 }}>
